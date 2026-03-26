@@ -68,3 +68,4 @@ optimizers_collection/*/*.pth.tar
 performance/*.npz
 sharpness_analysis/*.npz
 .sisyphus/
+dataset.zip
