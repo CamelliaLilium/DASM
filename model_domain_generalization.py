@@ -29,6 +29,12 @@ except ImportError as exc:
     _hybrid_sasm_step = None
     SASM_IMPORT_ERROR = exc
 
+
+def _optimizer_is_sasm(optimizer):
+    """Safe isinstance: optional sasm import sets AlgorithmAwareSAM to None."""
+    return AlgorithmAwareSAM is not None and isinstance(optimizer, AlgorithmAwareSAM)
+
+
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 DOMAIN_MAP = {
@@ -686,8 +692,10 @@ class Classifier1(nn.Module):
         x = self.fc(x)
         return F.softmax(x, dim=1)
 
-def train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args):
-    """Train the model"""
+def train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args, target_loader=None):
+    """Train the model. test_loader is validation (typically test split ∩ train_domains). target_loader optional."""
+    from testing_utils import eval_tensor_loader_classification_accuracy
+
     best_acc = 0.0
     device = torch.device(args.device)
 
@@ -696,6 +704,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
         'epoch_loss': [],
         'epoch_acc': [],
         'val_acc': [],
+        'target_acc': [],
         'lr': [],
         'domain_test_acc': [],  # List of per-epoch dicts: [{'QIM': 0.8, 'PMS': 0.7, ...}, ...]
     }
@@ -773,7 +782,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
             # soft_ce_closure removed
 
             # Steganalysis-Aware Sharpness Minimization or standard optimization
-            if isinstance(optimizer, AlgorithmAwareSAM):
+            if _optimizer_is_sasm(optimizer):
                 # Always use hard CE
                 use_closure = hard_ce_closure
                 
@@ -822,7 +831,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
             total += labels.size(0)
             
             # Collect domain performance for adaptive rho (only for DGSAM)
-            if isinstance(optimizer, AlgorithmAwareSAM) and optimizer.adaptive_rho and algorithm_labels is not None:
+            if _optimizer_is_sasm(optimizer) and optimizer.adaptive_rho and algorithm_labels is not None:
                 optimizer.collect_domain_performance(algorithm_labels, predicted, label_indices)
             
             # Periodic memory cleanup to prevent fragmentation
@@ -830,7 +839,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
                 torch.cuda.empty_cache()
 
         # Update any remaining accumulated gradients
-        if not isinstance(optimizer, AlgorithmAwareSAM):
+        if not _optimizer_is_sasm(optimizer):
             if (batch_idx + 1) % args.gradient_accumulation_steps != 0:
                 optimizer.step()
                 optimizer.zero_grad()
@@ -846,33 +855,20 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
             torch.cuda.empty_cache()
 
         # Validation phase
-        model.eval()
-        correct_preds = 0
-        total_preds = 0
-        with torch.no_grad():
-            for val_batch_idx, batch_data in enumerate(test_loader):
-                # Handle different batch formats (with/without algorithm labels)
-                if len(batch_data) == 3:
-                    inputs, labels, _ = batch_data  # Ignore algorithm labels in validation
-                else:
-                    inputs, labels = batch_data
-                    
-                inputs, labels = inputs.to(device), labels.to(device)
-                label_indices = labels.squeeze().long()
-                
-                outputs = model(inputs)
-
-                if args.steg_algorithm == 'FS-MDP':
-                    predicted = torch.round(outputs).squeeze()
-                    correct_preds += (predicted == label_indices.float()).sum().item()
-                else:
-                    _, predicted = torch.max(outputs, 1)
-                    correct_preds += (predicted == label_indices).sum().item()
-                total_preds += labels.size(0)
-                
-        accuracy = correct_preds / total_preds
-        print(f"Validation Accuracy: {accuracy:.4f}")
+        accuracy = eval_tensor_loader_classification_accuracy(model, test_loader, args, device)
+        print(f"Validation Accuracy (test∩train_domains): {accuracy:.4f}")
         gen_logs['val_acc'].append(float(accuracy))
+
+        if target_loader is not None and len(target_loader.dataset) > 0:
+            t_acc = eval_tensor_loader_classification_accuracy(model, target_loader, args, device)
+            if np.isnan(t_acc):
+                print("Target domain Accuracy (test∩test_domains): n/a (empty or failed)")
+                gen_logs['target_acc'].append(None)
+            else:
+                print(f"Target domain Accuracy (test∩test_domains): {t_acc:.4f}")
+                gen_logs['target_acc'].append(float(t_acc))
+        else:
+            gen_logs['target_acc'].append(None)
         
         # Domain test evaluation (if enabled and at the right interval)
         if args.domain_test_interval > 0 and (epoch + 1) % args.domain_test_interval == 0:
@@ -900,7 +896,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
         # Note: DGSAM manages its own scheduler step internally. Standard optimizer steps below.
         
         # Adaptive rho adjustment, history recording, and LR printing
-        if isinstance(optimizer, AlgorithmAwareSAM): # This handles SASM
+        if _optimizer_is_sasm(optimizer): # This handles SASM
             avg_grad_norm = optimizer.get_grad_norm()
             optimizer.record_epoch_stats(epoch, epoch_loss, epoch_acc, avg_grad_norm)
 
@@ -994,7 +990,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
             test_current_model(model, args)
     
     # Training completed - generate analysis plots and save history
-    if isinstance(optimizer, AlgorithmAwareSAM) and optimizer.adaptive_rho:
+    if _optimizer_is_sasm(optimizer) and optimizer.adaptive_rho:
         # Generate training analysis plots
         plot_dir = os.path.join(args.result_path, 'training_plots')
         optimizer.generate_training_analysis_plots(plot_dir, args)

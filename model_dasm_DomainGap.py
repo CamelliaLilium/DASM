@@ -48,6 +48,35 @@ from collections import defaultdict
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
+
+def _default_data_root():
+    """DASM 内 dataset/model_train；若不存在则使用与 DASM 平级的 ../dataset/model_train。"""
+    env = os.environ.get('DASM_DATA_ROOT')
+    if env:
+        return env
+    local = os.path.join(PROJECT_ROOT, 'dataset', 'model_train')
+    sibling = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset', 'model_train')
+    if os.path.isdir(local):
+        return local
+    if os.path.isdir(sibling):
+        return sibling
+    return local
+
+
+def _default_test_data_root():
+    """同上，对应 model_test。"""
+    env = os.environ.get('DASM_TEST_DATA_ROOT')
+    if env:
+        return env
+    local = os.path.join(PROJECT_ROOT, 'dataset', 'model_test')
+    sibling = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset', 'model_test')
+    if os.path.isdir(local):
+        return local
+    if os.path.isdir(sibling):
+        return sibling
+    return local
+
+
 # Import DASM optimizer
 from optimizers_collection.DASM import DASM, domain_contrastive_loss
 from models_collection.common.run_naming import build_run_tag, get_optimizer_type
@@ -315,11 +344,11 @@ def parse_args():
         
     # Path related arguments
     parser.add_argument('--data_root', type=str, 
-                        default=os.environ.get('DASM_DATA_ROOT', os.path.join(PROJECT_ROOT, 'dataset', 'model_train')),
-                        help='Data root directory')
+                        default=_default_data_root(),
+                        help='Data root directory (override with DASM_DATA_ROOT or --data_root)')
     parser.add_argument('--test_data_root', type=str, 
-                        default=os.environ.get('DASM_TEST_DATA_ROOT', os.path.join(PROJECT_ROOT, 'dataset', 'model_test')),
-                        help='Test data root directory')
+                        default=_default_test_data_root(),
+                        help='Test data root directory (override with DASM_TEST_DATA_ROOT or --test_data_root)')
     parser.add_argument('--result_path', type=str, 
                         default=os.environ.get('DASM_RESULT_ROOT', os.path.join(PROJECT_ROOT, 'models_collection', 'dasm_domain_gap')),
                         help='Results save path')
@@ -459,6 +488,24 @@ def convert_to_loader(x_train, y_train, x_test, y_test,
     return train_loader, test_loader
 
 
+def convert_to_eval_loader(x, y, algorithm_labels=None, batch_size=64):
+    """Single split (e.g. validation or target-domain test) -> DataLoader, no shuffle."""
+    try:
+        x_np = np.asarray(x, dtype=np.float32)
+        y_np = np.asarray(y, dtype=np.float32)
+    except Exception:
+        x_np = np.array(x, dtype=np.float32)
+        y_np = np.array(y, dtype=np.float32)
+    x_t = torch.from_numpy(x_np)
+    y_t = torch.from_numpy(y_np)
+    if algorithm_labels is not None:
+        algo_t = torch.LongTensor(algorithm_labels)
+        ds = TensorDataset(x_t, y_t, algo_t)
+    else:
+        ds = TensorDataset(x_t, y_t)
+    return DataLoader(ds, batch_size=batch_size, shuffle=False)
+
+
 # ==================== Model Definition ====================
 
 class HessianCompatibleMultiHeadAttention(nn.Module):
@@ -589,8 +636,14 @@ class Classifier1(nn.Module):
 
 # ==================== DASM 训练循环 ====================
 
-def train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args):
-    """Train the model with DASM optimizer + Online Domain Gap Modulation"""
+def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler, args, target_loader=None):
+    """Train the model with DASM optimizer + Online Domain Gap Modulation.
+
+    val_loader: test split filtered by train_domains (seen-domain held-out accuracy; used for best checkpoint).
+    target_loader: optional test split filtered by test_domains (e.g. OOD / target domain monitoring only).
+    """
+    from testing_utils import eval_tensor_loader_classification_accuracy
+
     best_acc = 0.0
     device = torch.device(args.device)
 
@@ -599,6 +652,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
         'epoch_loss': [],
         'epoch_acc': [],
         'val_acc': [],
+        'target_acc': [],
         'lr': [],
         'domain_test_acc': [],
         'rho': [],
@@ -629,7 +683,10 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
     print(f"  Model will auto-discover hard-to-separate domains and assign higher weights\n")
     # ====================================================
 
-    print(f"Training on domains: {args.train_domains}, Testing on: {args.test_domains}")
+    print(f"Training on domains: {args.train_domains}, test_domains (target monitor): {args.test_domains}")
+    print(f"  Validation & best checkpoint: test split ∩ train_domains")
+    if target_loader is not None and len(target_loader.dataset) > 0:
+        print(f"  Target-domain log (no effect on best ckpt): test split ∩ test_domains")
     contrast_status = "on" if use_contrast else "off"
     print(f"DASM config: rho={args.rho}, contrast={contrast_status}, contrast_tau={contrast_tau} (self-normalized)")
 
@@ -911,33 +968,21 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
         gen_logs['domain_gaps'].append(epoch_gap_avg)
         gen_logs['adaptive_weights'].append(epoch_weights_avg)
 
-        # Validation
-        model.eval()
-        correct_preds = 0
-        total_preds = 0
-        with torch.no_grad():
-            for batch_data in test_loader:
-                if len(batch_data) == 3:
-                    inputs, labels, _ = batch_data
-                else:
-                    inputs, labels = batch_data
-                    
-                inputs, labels = inputs.to(device), labels.to(device)
-                label_indices = labels.squeeze().long()
-                
-                outputs = model(inputs)
-
-                if args.steg_algorithm == 'FS-MDP':
-                    predicted = torch.round(outputs).squeeze()
-                    correct_preds += (predicted == label_indices.float()).sum().item()
-                else:
-                    _, predicted = torch.max(outputs, 1)
-                    correct_preds += (predicted == label_indices).sum().item()
-                total_preds += labels.size(0)
-                
-        accuracy = correct_preds / total_preds
-        print(f"Validation Accuracy: {accuracy:.4f}")
+        # Validation (seen domains on held-out test split) + optional target-domain monitor
+        accuracy = eval_tensor_loader_classification_accuracy(model, val_loader, args, device)
+        print(f"Validation Accuracy (test∩train_domains): {accuracy:.4f}")
         gen_logs['val_acc'].append(float(accuracy))
+
+        if target_loader is not None and len(target_loader.dataset) > 0:
+            t_acc = eval_tensor_loader_classification_accuracy(model, target_loader, args, device)
+            if np.isnan(t_acc):
+                print("Target domain Accuracy (test∩test_domains): n/a (empty or failed)")
+                gen_logs['target_acc'].append(None)
+            else:
+                print(f"Target domain Accuracy (test∩test_domains): {t_acc:.4f}")
+                gen_logs['target_acc'].append(float(t_acc))
+        else:
+            gen_logs['target_acc'].append(None)
         
         # 域测试
         if args.domain_test_interval > 0 and (epoch + 1) % args.domain_test_interval == 0:
@@ -1035,8 +1080,11 @@ def _plot_training_curves(gen_logs, plot_dir, ds_id, args):
         xs = np.arange(1, len(gen_logs['epoch_acc']) + 1)
         plt.plot(xs, gen_logs['epoch_acc'], 'g-', linewidth=2, label='Train')
         if len(gen_logs['val_acc']) > 0:
-            plt.plot(xs, gen_logs['val_acc'], 'r-', linewidth=2, label='Val')
-            plt.xlabel('Epoch')
+            plt.plot(xs, gen_logs['val_acc'], 'r-', linewidth=2, label='Val (test∩train_domains)')
+        if gen_logs.get('target_acc') and any(v is not None for v in gen_logs['target_acc']):
+            tgt = [np.nan if v is None else v for v in gen_logs['target_acc']]
+            plt.plot(xs, tgt, 'm--', linewidth=2, label='Target (test∩test_domains)')
+        plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
         plt.title('Accuracy (DASM)')
         plt.legend()
@@ -1174,7 +1222,7 @@ def build_param_based_run_tag(args, optimizer_type=None):
     """
     Generate run directory name based on hyperparameters
     
-    Format: dasm_er0.5_bs2048_rho0.05_ctau0.5_gtau0.5_gap_seed42
+    Format: train_test_er0.5_bs2048_rho0.05_ctau0.5_gtau0.5_gap_seed42
     (gap is just a marker, no lambda value since it's self-normalized)
     
     Args:
@@ -1203,6 +1251,7 @@ def build_param_based_run_tag(args, optimizer_type=None):
     
     # Build directory name
     parts = [optimizer_type]
+    parts.append(f"train{args.train_domains}_test{args.test_domains}")
     parts.append(f"er{embedding_rate}")
     parts.append(f"bs{args.batch_size}")
     parts.append(f"rho{args.rho}")
@@ -1362,8 +1411,8 @@ def main():
             scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
             criterion = nn.CrossEntropyLoss()
 
-        # Load and prepare data
-        x_train, y_train, x_test, y_test, algorithm_labels_train, algorithm_labels_test = get_alter_loaders(args)
+        # Load and prepare data (train split ∩ train_domains; val = test ∩ train_domains; target = test ∩ test_domains)
+        x_train, y_train, x_test_raw, y_test_raw, algorithm_labels_train, algorithm_labels_test = get_alter_loaders(args)
 
         # Parse domains
         train_domain_names = sorted(set(args.train_domains.split(',')))
@@ -1376,41 +1425,57 @@ def main():
         if len(train_domain_ids) == 0 or len(test_domain_ids) == 0:
             raise ValueError("No valid domains specified.")
 
-        # Filter data
         train_mask = np.isin(algorithm_labels_train, train_domain_ids)
         x_train = x_train[train_mask]
         y_train = y_train[train_mask]
         algorithm_labels_train = algorithm_labels_train[train_mask]
 
-        test_mask = np.isin(algorithm_labels_test, test_domain_ids)
-        x_test = x_test[test_mask]
-        y_test = y_test[test_mask]
-        algorithm_labels_test = algorithm_labels_test[test_mask]
+        val_mask = np.isin(algorithm_labels_test, train_domain_ids)
+        target_mask = np.isin(algorithm_labels_test, test_domain_ids)
+        x_val = x_test_raw[val_mask]
+        y_val = y_test_raw[val_mask]
+        algo_val = algorithm_labels_test[val_mask]
+        x_tgt = x_test_raw[target_mask]
+        y_tgt = y_test_raw[target_mask]
+        algo_tgt = algorithm_labels_test[target_mask]
 
-        if len(x_train) == 0 or len(x_test) == 0:
-            raise ValueError("Filtered dataset is empty.")
+        if len(x_train) == 0 or len(x_val) == 0:
+            raise ValueError("Filtered dataset is empty (need train split ∩ train_domains and test split ∩ train_domains).")
+
+        print(f"Train samples (train split ∩ train_domains): {len(x_train)}")
+        print(f"Val samples (test split ∩ train_domains): {len(x_val)}")
+        print(f"Target samples (test split ∩ test_domains): {len(x_tgt)}")
 
         # Data preprocessing
         x_train = x_train[:, :, 0:7]
-        x_test = x_test[:, :, 0:7]
+        x_val = x_val[:, :, 0:7]
+        x_tgt = x_tgt[:, :, 0:7]
         x_train = np.where(x_train == -1, 200, x_train)
-        x_test = np.where(x_test == -1, 200, x_test)
+        x_val = np.where(x_val == -1, 200, x_val)
+        x_tgt = np.where(x_tgt == -1, 200, x_tgt)
 
         y_train = y_train[:, 1:]
-        y_test = y_test[:, 1:]
+        y_val = y_val[:, 1:]
+        y_tgt = y_tgt[:, 1:]
 
-        # Create data loaders
-        train_loader, test_loader = convert_to_loader(
-            x_train, y_train, x_test, y_test,
-            algorithm_labels_train, algorithm_labels_test, args.batch_size
+        train_loader, val_loader = convert_to_loader(
+            x_train, y_train, x_val, y_val,
+            algorithm_labels_train, algo_val, args.batch_size
+        )
+        target_loader = (
+            convert_to_eval_loader(x_tgt, y_tgt, algo_tgt, args.batch_size)
+            if len(x_tgt) > 0 else None
         )
 
         # Train
         if args.use_dasm:
-            train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args)
+            train_model(model, train_loader, val_loader, optimizer, criterion, scheduler, args, target_loader=target_loader)
         else:
             from model_domain_generalization import train_model as standard_train_model
-            standard_train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args)
+            standard_train_model(
+                model, train_loader, val_loader, optimizer, criterion, scheduler, args,
+                target_loader=target_loader,
+            )
         return
     
     if args.steg_algorithm == 'SFFN':
@@ -1418,9 +1483,9 @@ def main():
         run_sffn_domain_generalization(args)
         return
     
-    # 加载数据
+    # 加载数据（val = test ∩ train_domains；target = test ∩ test_domains）
     print(f'Loading combined dataset...')
-    x_train, y_train, x_test, y_test, algorithm_labels_train, algorithm_labels_test = get_alter_loaders(args)
+    x_train, y_train, x_test_raw, y_test_raw, algorithm_labels_train, algorithm_labels_test = get_alter_loaders(args)
     
     # 解析域
     train_domain_names = sorted(set(args.train_domains.split(',')))
@@ -1433,45 +1498,57 @@ def main():
     if len(train_domain_ids) == 0 or len(test_domain_ids) == 0:
         raise ValueError("No valid domains specified.")
 
-    # 过滤数据
     train_mask = np.isin(algorithm_labels_train, train_domain_ids)
     x_train = x_train[train_mask]
     y_train = y_train[train_mask]
     algorithm_labels_train = algorithm_labels_train[train_mask]
 
-    test_mask = np.isin(algorithm_labels_test, test_domain_ids)
-    x_test = x_test[test_mask]
-    y_test = y_test[test_mask]
-    algorithm_labels_test = algorithm_labels_test[test_mask]
+    val_mask = np.isin(algorithm_labels_test, train_domain_ids)
+    target_mask = np.isin(algorithm_labels_test, test_domain_ids)
+    x_val = x_test_raw[val_mask]
+    y_val = y_test_raw[val_mask]
+    algo_val = algorithm_labels_test[val_mask]
+    x_tgt = x_test_raw[target_mask]
+    y_tgt = y_test_raw[target_mask]
+    algo_tgt = algorithm_labels_test[target_mask]
 
-    if len(x_train) == 0 or len(x_test) == 0:
-        raise ValueError("Filtered dataset is empty.")
+    if len(x_train) == 0 or len(x_val) == 0:
+        raise ValueError("Filtered dataset is empty (need train split ∩ train_domains and test split ∩ train_domains).")
     
     train_steg_ratio = np.mean(y_train[:, 1]) if len(y_train) > 0 else 0
-    test_steg_ratio = np.mean(y_test[:, 1]) if len(y_test) > 0 else 0
+    val_steg_ratio = np.mean(y_val[:, 1]) if len(y_val) > 0 else 0
+    tgt_steg_ratio = np.mean(y_tgt[:, 1]) if len(y_tgt) > 0 else 0
     print(f"Filtered train samples: {len(x_train)} (steg ratio: {train_steg_ratio:.2f})")
-    print(f"Filtered test samples: {len(x_test)} (steg ratio: {test_steg_ratio:.2f})")
+    print(f"Val (test∩train_domains): {len(x_val)} (steg ratio: {val_steg_ratio:.2f})")
+    print(f"Target (test∩test_domains): {len(x_tgt)} (steg ratio: {tgt_steg_ratio:.2f})")
     
     # 数据预处理
     if args.steg_algorithm == 'FS-MDP':
         from testing_utils import transfer_to_onehot
         x1_train = transfer_to_onehot(x_train)
-        x1_test = transfer_to_onehot(x_test)
+        x1_val = transfer_to_onehot(x_val)
+        x1_tgt = transfer_to_onehot(x_tgt)
     else:
         x1_train = x_train[:, :, 0:7]
-        x1_test = x_test[:, :, 0:7]
+        x1_val = x_val[:, :, 0:7]
+        x1_tgt = x_tgt[:, :, 0:7]
         x1_train = np.where(x1_train == -1, 200, x1_train)
-        x1_test = np.where(x1_test == -1, 200, x1_test)
+        x1_val = np.where(x1_val == -1, 200, x1_val)
+        x1_tgt = np.where(x1_tgt == -1, 200, x1_tgt)
 
     print(f"Training data shape: {x1_train.shape}")
     
     y1_train = y_train[:, 1:]
-    y1_test = y_test[:, 1:]
+    y1_val = y_val[:, 1:]
+    y1_tgt = y_tgt[:, 1:]
     
-    # 创建数据加载器
-    train_loader, test_loader = convert_to_loader(
-        x1_train, y1_train, x1_test, y1_test, 
-        algorithm_labels_train, algorithm_labels_test, args.batch_size
+    train_loader, val_loader = convert_to_loader(
+        x1_train, y1_train, x1_val, y1_val,
+        algorithm_labels_train, algo_val, args.batch_size
+    )
+    target_loader = (
+        convert_to_eval_loader(x1_tgt, y1_tgt, algo_tgt, args.batch_size)
+        if len(x_tgt) > 0 else None
     )
 
     # Initialize model
@@ -1517,7 +1594,7 @@ def main():
         print("Using CrossEntropyLoss.")
 
         # 训练
-        train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args)
+        train_model(model, train_loader, val_loader, optimizer, criterion, scheduler, args, target_loader=target_loader)
     else:
         optimizer = Adam(model.parameters(), lr=args.lr)
         scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
@@ -1525,7 +1602,10 @@ def main():
         from model_domain_generalization import train_model as standard_train_model
         if not hasattr(args, "use_sasm"):
             args.use_sasm = False
-        standard_train_model(model, train_loader, test_loader, optimizer, criterion, scheduler, args)
+        standard_train_model(
+            model, train_loader, val_loader, optimizer, criterion, scheduler, args,
+            target_loader=target_loader,
+        )
 
 
 if __name__ == '__main__':
