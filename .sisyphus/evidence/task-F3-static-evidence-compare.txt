@@ -1,2 +1,0 @@
-checked=538
-PASS: static evidence hashes match baseline

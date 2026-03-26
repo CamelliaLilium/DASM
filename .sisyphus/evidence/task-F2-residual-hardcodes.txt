@@ -1,4 +1,0 @@
-PASS: remaining /root/autodl-tmp references are limited to
-- provenance comments in optimizers_collection/{DISAM,FSAM,SAGM}
-- frozen evidence file sharpness_analysis/sharpness_analysis_results.json
-No live command surfaces retain /root/autodl-tmp defaults.

@@ -1,1 +1,0 @@
-PASS: run.sh and tsne_results/tsne.sh syntax valid

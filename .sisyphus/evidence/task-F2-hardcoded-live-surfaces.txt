@@ -1,1 +1,0 @@
-PASS: no /root/autodl-tmp in targeted live surfaces
