@@ -284,8 +284,6 @@ def parse_args():
     parser.add_argument('--embedding_rate', type=float, default=0.5, 
                         choices=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
                         help='Embedding rate')
-    parser.add_argument('--sample_length', type=int, default=1000, 
-                        help='Sample length (ms)')
     parser.add_argument('--batch_size', type=int, default=128, 
                         help='Batch size')
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
@@ -394,34 +392,12 @@ def set_random_seed(seed):
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-
-def get_data_paths(args):
-    """Get data paths for combined dataset."""
-    if not args.dataset_id:
-        raise ValueError("dataset_id must be provided for combined dataset")
-    
-    sample_len_str = f"_{int(args.sample_length / 1000)}s"
-    # Try combined_multi first, then try data_root directly
-    pkl_dir = os.path.join(args.data_root, 'combined_multi')
-    if not os.path.exists(pkl_dir):
-        pkl_dir = args.data_root
-    
-    if args.dataset_id.endswith('.pkl'):
-        pkl_file = os.path.join(pkl_dir, args.dataset_id)
-    else:
-        # Check if dataset_id already contains sample length info
-        if '_1s' in args.dataset_id or '_0.5s' in args.dataset_id:
-            base_pkl_name = args.dataset_id
-        else:
-            base_pkl_name = f"{args.dataset_id}{sample_len_str}"
-        pkl_file = os.path.join(pkl_dir, f"{base_pkl_name}.pkl")
-    
-    return pkl_file
-
-
 def get_alter_loaders(args):
     """Get data loaders for combined dataset."""
-    pkl_file = get_data_paths(args)
+    if not args.dataset_id:
+        raise ValueError(f"dataset_id must be provided for combined dataset without .pkl")
+    
+    pkl_file = os.path.join(args.data_root, f"{args.dataset_id}.pkl")
     
     if not os.path.exists(pkl_file):
         raise FileNotFoundError(f"Combined dataset PKL file not found at: {pkl_file}")
