@@ -35,10 +35,6 @@ build/
 # .sisyphus/ is kept for plan tracking
 
 # Ignore large generated files within evidence directories (but keep the directories for static evidence)
-tsne_results/
-domain_gap_results/
-table_confident_level/
-figures/
 
 # === Large data files (to be omitted from repo, documented elsewhere) ===
 dataset/
@@ -46,6 +42,20 @@ dataset.zip
 models_collection/*/model_best_*.pth.tar
 optimizers_collection/*/*.pth
 optimizers_collection/*/*.pth.tar
-performance/
-sharpness_analysis/
 .sisyphus/
+
+# === Large data files to ignore ===
+*.pkl
+*.npz
+*.pth
+*.pth.tar
+# Except runtime assets
+!models_collection/wordTable/*.pth
+
+# Ignore large generated files within evidence directories (but keep the directories for static evidence)
+tsne_results/**/*.npz
+domain_gap_results/**/*.pth
+domain_gap_results/**/*.pth.tar
+table_confident_level/**/*.pth.tar
+sharpness_analysis/**/*.npz
+performance/**/*.npz
