@@ -1,0 +1,81 @@
+usage: model_dasm_DomainGap.py [-h] [--dataset_id DATASET_ID]
+                               [--embedding_rate {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}]
+                               [--sample_length SAMPLE_LENGTH]
+                               [--batch_size BATCH_SIZE]
+                               [--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS]
+                               [--num_class NUM_CLASS]
+                               [--hidden_num HIDDEN_NUM]
+                               [--num_layers NUM_LAYERS] [--dropout DROPOUT]
+                               [--d_model D_MODEL] [--num_heads NUM_HEADS]
+                               [--d_ff D_FF] [--max_len MAX_LEN]
+                               [--epochs EPOCHS] [--lr LR]
+                               [--data_root DATA_ROOT]
+                               [--test_data_root TEST_DATA_ROOT]
+                               [--result_path RESULT_PATH] [--gpu GPU]
+                               [--device {cuda,cpu}] [--seed SEED]
+                               [--save_model]
+                               [--steg_algorithm {Transformer,LStegT,FS-MDP,FS_MDP,CCN,SS-QCCN,SS_QCCN,SFFN,KFEF,DVSF,DAEF-VS,DAEF_VS}]
+                               [--use_dasm] [--rho RHO] [--use_contrast]
+                               [--contrast_tau CONTRAST_TAU]
+                               [--eval_step EVAL_STEP]
+                               [--domain_test_interval DOMAIN_TEST_INTERVAL]
+                               [--train_domains TRAIN_DOMAINS]
+                               [--test_domains TEST_DOMAINS]
+
+DASM Domain Generalization for VoIP Steganalysis
+
+options:
+  -h, --help            show this help message and exit
+  --dataset_id DATASET_ID
+                        ID for combined dataset PKL file
+  --embedding_rate {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
+                        Embedding rate
+  --sample_length SAMPLE_LENGTH
+                        Sample length (ms)
+  --batch_size BATCH_SIZE
+                        Batch size
+  --gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS
+                        Number of steps to accumulate gradients before
+                        updating (effective_batch_size = batch_size *
+                        gradient_accumulation_steps)
+  --num_class NUM_CLASS
+                        Number of classes
+  --hidden_num HIDDEN_NUM
+                        Hidden layer units
+  --num_layers NUM_LAYERS
+                        Number of transformer layers
+  --dropout DROPOUT     Dropout probability
+  --d_model D_MODEL     Model dimension
+  --num_heads NUM_HEADS
+                        Number of attention heads
+  --d_ff D_FF           Feed-forward network dimension
+  --max_len MAX_LEN     Maximum length for positional encoding
+  --epochs EPOCHS       Number of training epochs
+  --lr LR               Learning rate
+  --data_root DATA_ROOT
+                        Data root directory
+  --test_data_root TEST_DATA_ROOT
+                        Test data root directory
+  --result_path RESULT_PATH
+                        Results save path
+  --gpu GPU             GPU ID to use
+  --device {cuda,cpu}   Training device
+  --seed SEED           Random seed
+  --save_model          Whether to save model
+  --steg_algorithm {Transformer,LStegT,FS-MDP,FS_MDP,CCN,SS-QCCN,SS_QCCN,SFFN,KFEF,DVSF,DAEF-VS,DAEF_VS}
+                        Steganalysis algorithm to use for the model
+                        architecture.
+  --use_dasm            Enable DASM training (disabled by default)
+  --rho RHO             Perturbation radius for DASM
+  --use_contrast        Enable contrastive loss in DASM training
+  --contrast_tau CONTRAST_TAU
+                        Temperature ¦Ó for contrastive loss (smaller=sharper)
+  --eval_step EVAL_STEP
+                        Run external eval every N epochs (0=disabled)
+  --domain_test_interval DOMAIN_TEST_INTERVAL
+                        Interval (epochs) for domain test evaluation (0 to
+                        disable)
+  --train_domains TRAIN_DOMAINS
+                        Comma-separated training domains
+  --test_domains TEST_DOMAINS
+                        Comma-separated testing domains

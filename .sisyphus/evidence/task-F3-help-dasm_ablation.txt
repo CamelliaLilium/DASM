@@ -1,0 +1,70 @@
+usage: dasm_ablation.py [-h] [--train_script TRAIN_SCRIPT] --dataset_id
+                        DATASET_ID [--embedding_rate EMBEDDING_RATE]
+                        [--batch_size BATCH_SIZE] [--epochs EPOCHS]
+                        [--train_domains TRAIN_DOMAINS]
+                        [--test_domains TEST_DOMAINS]
+                        [--steg_algorithm STEG_ALGORITHM] [--gpu GPU]
+                        [--device DEVICE] [--eval_step EVAL_STEP]
+                        [--domain_test_interval DOMAIN_TEST_INTERVAL]
+                        [--data_root DATA_ROOT]
+                        [--test_data_root TEST_DATA_ROOT]
+                        [--result_path RESULT_PATH]
+                        [--ablation_root ABLATION_ROOT] [--rho RHO]
+                        [--adaptive] [--contrast_tau CONTRAST_TAU]
+                        [--use_contrast] [--lr LR]
+                        [--weight_decay WEIGHT_DECAY] [--use_dasm]
+                        [--rho_list RHO_LIST] [--tau_list TAU_LIST]
+                        [--lr_list LR_LIST] [--wd_list WD_LIST]
+                        [--groups GROUPS] [--ablation_mode {None,core3}]
+                        [--run] [--max_runs MAX_RUNS] [--table_only]
+                        [--table_out TABLE_OUT] [--table_csv TABLE_CSV]
+                        [--table_caption TABLE_CAPTION]
+                        [--table_label TABLE_LABEL]
+
+DASM ablation runner
+
+options:
+  -h, --help            show this help message and exit
+  --train_script TRAIN_SCRIPT
+                        Training entry script path (default:
+                        model_dasm_DomainGap.py)
+  --dataset_id DATASET_ID
+                        Combined dataset id or path
+  --embedding_rate EMBEDDING_RATE
+  --batch_size BATCH_SIZE
+  --epochs EPOCHS
+  --train_domains TRAIN_DOMAINS
+  --test_domains TEST_DOMAINS
+  --steg_algorithm STEG_ALGORITHM
+  --gpu GPU
+  --device DEVICE
+  --eval_step EVAL_STEP
+  --domain_test_interval DOMAIN_TEST_INTERVAL
+  --data_root DATA_ROOT
+  --test_data_root TEST_DATA_ROOT
+  --result_path RESULT_PATH
+  --ablation_root ABLATION_ROOT
+                        Subfolder under result_path to store ablation runs
+                        (set empty to disable)
+  --rho RHO
+  --adaptive
+  --contrast_tau CONTRAST_TAU
+  --use_contrast
+  --lr LR
+  --weight_decay WEIGHT_DECAY
+  --use_dasm
+  --rho_list RHO_LIST
+  --tau_list TAU_LIST
+  --lr_list LR_LIST
+  --wd_list WD_LIST
+  --groups GROUPS       Prefix filter, e.g. 'ablate_rho,ablate_tau'
+  --ablation_mode {None,core3}
+                        If set to core3, generate only the 3 core ablation
+                        groups.
+  --run                 Execute commands (default: dry-run)
+  --max_runs MAX_RUNS   Limit number of runs
+  --table_only          Only generate tables and exit
+  --table_out TABLE_OUT
+  --table_csv TABLE_CSV
+  --table_caption TABLE_CAPTION
+  --table_label TABLE_LABEL

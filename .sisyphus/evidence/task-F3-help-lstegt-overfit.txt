@@ -1,0 +1,45 @@
+usage: test_overfit_single_batch.py [-h] --dataset_id DATASET_ID
+                                    [--data_root DATA_ROOT]
+                                    [--train_domains TRAIN_DOMAINS]
+                                    [--test_domains TEST_DOMAINS]
+                                    [--debug_batch_size DEBUG_BATCH_SIZE]
+                                    [--epochs EPOCHS] [--lr LR]
+                                    [--device {cuda,cpu}] [--gpu GPU]
+                                    [--d_model D_MODEL]
+                                    [--num_class NUM_CLASS]
+                                    [--dropout DROPOUT]
+                                    [--num_layers NUM_LAYERS]
+                                    [--num_heads NUM_HEADS]
+                                    [--max_len MAX_LEN]
+                                    [--output_dir OUTPUT_DIR]
+
+LStegT Overfit Single Batch Test
+
+options:
+  -h, --help            show this help message and exit
+  --dataset_id DATASET_ID
+                        Dataset ID (e.g., QIM+PMS+LSB+AHCM_0.5_1s)
+  --data_root DATA_ROOT
+                        Data root directory
+  --train_domains TRAIN_DOMAINS
+                        Comma-separated training domains
+  --test_domains TEST_DOMAINS
+                        Comma-separated testing domains
+  --debug_batch_size DEBUG_BATCH_SIZE
+                        Batch size for single batch test
+  --epochs EPOCHS       Number of epochs for overfitting test
+  --lr LR               Learning rate
+  --device {cuda,cpu}   Training device
+  --gpu GPU             GPU ID to use
+  --d_model D_MODEL     Model dimension
+  --num_class NUM_CLASS
+                        Number of classes
+  --dropout DROPOUT     Dropout probability
+  --num_layers NUM_LAYERS
+                        Number of transformer layers
+  --num_heads NUM_HEADS
+                        Number of attention heads
+  --max_len MAX_LEN     Maximum sequence length
+  --output_dir OUTPUT_DIR
+                        Output directory for results (default: current
+                        directory)

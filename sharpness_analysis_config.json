@@ -1,0 +1,55 @@
+{
+  "__comment": "Paths are repository-relative. Override at runtime via --config edits or DASM_* environment variables in scripts.",
+  "dataset": {
+    "data_root": "dataset/model_train",
+    "dataset_id": "QIM+PMS+LSB+AHCM_0.5_1s",
+    "batch_size": 64,
+    "max_batches": null,
+    "d_model": 64,
+    "num_heads": 8,
+    "d_ff": 256,
+    "num_layers": 2,
+    "max_len": 100,
+    "dropout": 0.5
+  },
+  "rho": 0.05,
+  "seed": 42,
+  "metrics_summary_csv": "table_confident_level/json_results_summary.csv",
+  "models": [
+    {
+      "name": "Adam",
+      "key": "adam",
+      "checkpoint": "models_collection/Transformer/adam_train_0.5/model_best_Transformer_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM.pth.tar"
+    },
+    {
+      "name": "SAM",
+      "key": "sam",
+      "checkpoint": "models_collection/Transformer/sam_train_0.5_bs4096/model_best_Transformer_0.5.pth.tar"
+    },
+    {
+      "name": "DISAM",
+      "key": "disam",
+      "checkpoint": "models_collection/Transformer/disam_train_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM/model_best_Transformer_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM.pth.tar"
+    },
+    {
+      "name": "SAGM",
+      "key": "sagm",
+      "checkpoint": "models_collection/Transformer/sagm_train_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM/model_best_Transformer_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM.pth.tar"
+    },
+    {
+      "name": "FSAM",
+      "key": "fsam",
+      "checkpoint": "models_collection/Transformer/fsam_train_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM/model_best_Transformer_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM.pth.tar"
+    },
+    {
+      "name": "DGSAM",
+      "key": "dgsam",
+      "checkpoint": "models_collection/Transformer/dgsam_train_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM/model_best_Transformer_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM.pth.tar"
+    },
+    {
+      "name": "DASM (Ours)",
+      "key": "dasm",
+      "checkpoint": "models_collection/dasm_domain_gap/Transformer/dasm_er0.5_bs1024_rho0.03_ctau0.1_gap_seed42/model_best_Transformer_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM.pth.tar"
+    }
+  ]
+}

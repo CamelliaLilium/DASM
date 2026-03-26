@@ -1,0 +1,11 @@
+usage: sharpness_analysis.py [-h] --config CONFIG [--output_dir OUTPUT_DIR]
+                             [--device {cuda,cpu}]
+
+Zeroth-order sharpness analysis
+
+options:
+  -h, --help            show this help message and exit
+  --config CONFIG       Path to config JSON
+  --output_dir OUTPUT_DIR
+                        Output directory
+  --device {cuda,cpu}   Computation device

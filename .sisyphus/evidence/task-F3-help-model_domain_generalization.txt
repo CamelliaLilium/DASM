@@ -1,0 +1,98 @@
+usage: model_domain_generalization.py [-h]
+                                      [--train_dataset {QIM,PMS,LSB,AHCM,combined}]
+                                      [--embedding_rate {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}]
+                                      [--sample_length SAMPLE_LENGTH]
+                                      [--batch_size BATCH_SIZE]
+                                      [--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS]
+                                      [--num_class NUM_CLASS]
+                                      [--hidden_num HIDDEN_NUM]
+                                      [--num_layers NUM_LAYERS]
+                                      [--dropout DROPOUT] [--d_model D_MODEL]
+                                      [--num_heads NUM_HEADS] [--d_ff D_FF]
+                                      [--max_len MAX_LEN] [--epochs EPOCHS]
+                                      [--lr LR] [--weight_decay WEIGHT_DECAY]
+                                      [--result_path RESULT_PATH]
+                                      [--data_root DATA_ROOT]
+                                      [--test_data_root TEST_DATA_ROOT]
+                                      [--train_label_csv TRAIN_LABEL_CSV]
+                                      [--dataset_id DATASET_ID] [--gpu GPU]
+                                      [--device {cuda,cpu}] [--seed SEED]
+                                      [--save_model] [--test_only]
+                                      [--alpha ALPHA] [--gamma GAMMA]
+                                      [--steg_algorithm {Transformer,LStegT,FS-MDP,CCN,SS-QCCN,SFFN,KFEF,DVSF,DAEF-VS}]
+                                      [--use_sasm] [--rho RHO]
+                                      [--adaptive_rho] [--rho_min RHO_MIN]
+                                      [--rho_max RHO_MAX]
+                                      [--eval_step EVAL_STEP]
+                                      [--domain_test_interval DOMAIN_TEST_INTERVAL]
+                                      [--train_domains TRAIN_DOMAINS]
+                                      [--test_domains TEST_DOMAINS]
+
+PyTorch QIM Steganalysis Model
+
+options:
+  -h, --help            show this help message and exit
+  --train_dataset {QIM,PMS,LSB,AHCM,combined}
+                        Training dataset type
+  --embedding_rate {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
+                        Embedding rate (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
+                        0.8, 0.9, 1.0)
+  --sample_length SAMPLE_LENGTH
+                        Sample length (ms)
+  --batch_size BATCH_SIZE
+                        Batch size
+  --gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS
+                        Number of steps to accumulate gradients before
+                        updating (effective_batch_size = batch_size *
+                        gradient_accumulation_steps)
+  --num_class NUM_CLASS
+                        Number of classes
+  --hidden_num HIDDEN_NUM
+                        Hidden layer units
+  --num_layers NUM_LAYERS
+                        Number of transformer layers
+  --dropout DROPOUT     Dropout probability
+  --d_model D_MODEL     Model dimension
+  --num_heads NUM_HEADS
+                        Number of attention heads
+  --d_ff D_FF           Feed-forward network dimension
+  --max_len MAX_LEN     Maximum length for positional encoding
+  --epochs EPOCHS       Number of training epochs
+  --lr LR               Learning rate
+  --weight_decay WEIGHT_DECAY
+                        Weight decay
+  --result_path RESULT_PATH
+                        Results save path
+  --data_root DATA_ROOT
+                        Data root directory
+  --test_data_root TEST_DATA_ROOT
+                        Test data root directory
+  --train_label_csv TRAIN_LABEL_CSV
+                        Training label CSV file path
+  --dataset_id DATASET_ID
+                        ID for combined dataset, used when train_dataset is
+                        "combined"
+  --gpu GPU             GPU ID to use
+  --device {cuda,cpu}   Training device
+  --seed SEED           Random seed
+  --save_model          Whether to save model
+  --test_only           Test only mode
+  --alpha ALPHA         Focal Loss alpha parameter
+  --gamma GAMMA         Focal Loss gamma parameter
+  --steg_algorithm {Transformer,LStegT,FS-MDP,CCN,SS-QCCN,SFFN,KFEF,DVSF,DAEF-VS}
+                        Steganalysis algorithm to use for the model
+                        architecture.
+  --use_sasm            Use SASM optimizer instead of standard optimizer
+  --rho RHO             Rho parameter for SASM
+  --adaptive_rho        Use adaptive rho adjustment during training
+  --rho_min RHO_MIN     Minimum rho value for adaptive adjustment
+  --rho_max RHO_MAX     Maximum rho value for adaptive adjustment
+  --eval_step EVAL_STEP
+                        Run external eval every N epochs (0=disabled)
+  --domain_test_interval DOMAIN_TEST_INTERVAL
+                        Interval (epochs) for domain test evaluation (0 to
+                        disable, default 5).
+  --train_domains TRAIN_DOMAINS
+                        Comma-separated training domains (e.g., "QIM,PMS")
+  --test_domains TEST_DOMAINS
+                        Comma-separated testing domains (e.g., "LSB,AHCM")
