@@ -121,6 +121,37 @@ def convert_to_loader_test(x_val, y_val, batch_size=64):
     return test_loader
 
 
+def eval_tensor_loader_classification_accuracy(model, loader, args, device=None):
+    """
+    Classification accuracy on a TensorDataset-backed loader (same convention as training scripts).
+    Supports batches of (x, y) or (x, y, algorithm_labels). Empty or None loader -> nan.
+    """
+    if loader is None or len(loader.dataset) == 0:
+        return float("nan")
+    if device is None:
+        device = torch.device(args.device)
+    model.eval()
+    correct_preds = 0
+    total_preds = 0
+    with torch.no_grad():
+        for batch_data in loader:
+            if len(batch_data) == 3:
+                inputs, labels, _ = batch_data
+            else:
+                inputs, labels = batch_data
+            inputs, labels = inputs.to(device), labels.to(device)
+            label_indices = labels.squeeze().long()
+            outputs = model(inputs)
+            if args.steg_algorithm == "FS-MDP":
+                predicted = torch.round(outputs).squeeze()
+                correct_preds += (predicted == label_indices.float()).sum().item()
+            else:
+                _, predicted = torch.max(outputs, 1)
+                correct_preds += (predicted == label_indices).sum().item()
+            total_preds += labels.size(0)
+    return correct_preds / total_preds if total_preds > 0 else float("nan")
+
+
 def get_alter_loaders_test(file_embed, file_no_embed, max_samples_per_class=5000):
     """
     Get test data loaders with optional sampling.
