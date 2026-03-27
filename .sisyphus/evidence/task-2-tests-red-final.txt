@@ -1,0 +1,25 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-9.0.2, pluggy-1.6.0 -- D:\miniconda3\python.exe
+cachedir: .pytest_cache
+rootdir: E:\ICML2026\DASM
+plugins: asyncio-1.3.0, anyio-4.9.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 4 items
+
+tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_adgm_changes_gradient_direction FAILED [ 25%]
+tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_live_gap_loss_is_differentiable FAILED [ 50%]
+tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_perturbed_gap_uses_perturbed_features FAILED [ 75%]
+tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_rho_scales_perturbation_norm PASSED [100%]
+
+================================== FAILURES ===================================
+E   AssertionError: 1.0000001192092896 not less than 0.9999 : gap_loss must change gradient direction. Cosine similarity: 1.000000 (should be < 0.9999)
+D:\miniconda3\Lib\unittest\case.py:715: AssertionError: 1.0000001192092896 not less than 0.9999 : gap_loss must change gradient direction. Cosine similarity: 1.000000 (should be < 0.9999)
+E   AssertionError: False is not true : gap_loss must require gradients
+D:\miniconda3\Lib\unittest\case.py:727: AssertionError: False is not true : gap_loss must require gradients
+E   AssertionError: unexpectedly None : gap_loss_perturbed must have grad_fn (be differentiable) so it can contribute to the perturbed loss backward pass
+D:\miniconda3\Lib\unittest\case.py:715: AssertionError: unexpectedly None : gap_loss_perturbed must have grad_fn (be differentiable) so it can contribute to the perturbed loss backward pass
+=========================== short test summary info ===========================
+FAILED tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_adgm_changes_gradient_direction
+FAILED tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_live_gap_loss_is_differentiable
+FAILED tests/test_adgm_gradient_flow.py::TestADGMGradientFlow::test_perturbed_gap_uses_perturbed_features
+========================= 3 failed, 1 passed in 2.50s =========================

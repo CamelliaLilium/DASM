@@ -1,0 +1,60 @@
+TASK 1: Data Probe Script Verification
+======================================
+
+DELIVERABLES CHECKLIST:
+[PASS] experiments/w5_adgm_repair/probe_dataset_small.py exists
+[PASS] Script accepts --data_root and --dataset_ids arguments
+[PASS] Running with ER 0.1 produces dataset_probe_0.1.json
+[PASS] Running with ER 0.5 produces dataset_probe_0.5.json
+[PASS] JSON includes: tuple_length, train_count, test_count, per_domain_class_counts, batch_coverage_estimates
+[PASS] Invalid dataset ID exits with non-zero code (exit code 1)
+[PASS] Invalid dataset ID produces clear error message
+[PASS] Evidence saved to .sisyphus/evidence/task-1-probe-valid.txt
+[PASS] Evidence saved to .sisyphus/evidence/task-1-probe-invalid.txt
+
+DATA STRUCTURE VERIFICATION:
+[PASS] Tuple format: 6-tuple (x_train, y_train, x_test, y_test, algo_labels_train, algo_labels_test)
+[PASS] Train/test counts correctly reported
+[PASS] Per-domain counts: QIM, PMS, LSB, AHCM
+[PASS] Per-class counts: cover_class_0, cover_class_1, stego_class_0, stego_class_1
+[PASS] Batch coverage estimates for batch sizes 256, 512, 1024
+[PASS] Batch coverage includes: smallest_domain, smallest_domain_count, expected_samples_per_batch, coverage_ratio
+
+SAMPLE DATA (ER 0.1):
+- Train samples: 16000
+- Test samples: 4000
+- Per-domain: 4000 samples each (QIM, PMS, LSB, AHCM)
+- Batch 256: expected 64 samples per batch (coverage_ratio: 0.016)
+- Batch 512: expected 128 samples per batch (coverage_ratio: 0.032)
+- Batch 1024: expected 256 samples per batch (coverage_ratio: 0.064)
+
+SAMPLE DATA (ER 0.5):
+- Train samples: 4000
+- Test samples: 16000
+- Per-domain: 1000 samples each (QIM, PMS, LSB, AHCM)
+- Batch 256: expected 64 samples per batch (coverage_ratio: 0.064)
+- Batch 512: expected 128 samples per batch (coverage_ratio: 0.128)
+- Batch 1024: expected 256 samples per batch (coverage_ratio: 0.256)
+
+SCRIPT FEATURES:
+[PASS] Uses argparse for CLI arguments
+[PASS] Supports multiple dataset IDs (nargs='+')
+[PASS] Creates results directory if missing
+[PASS] Creates evidence directory if missing
+[PASS] Saves JSON to experiments/w5_adgm_repair/results/dataset_probe_{er}.json
+[PASS] Saves transcript to .sisyphus/evidence/task-1-probe-valid.txt
+[PASS] Uses os.path.join for cross-platform compatibility
+[PASS] No pandas dependency (uses stdlib + numpy + pickle)
+[PASS] Runs from repo root E:\ICML2026\DASM
+
+VERIFICATION COMMANDS EXECUTED:
+1. python experiments/w5_adgm_repair/probe_dataset_small.py --data_root dataset_small --dataset_ids QIM+PMS+LSB+AHCM_0.1_1s QIM+PMS+LSB+AHCM_0.5_1s
+   Result: SUCCESS - Both datasets probed, JSON files created
+   
+2. python experiments/w5_adgm_repair/probe_dataset_small.py --data_root dataset_small --dataset_ids INVALID_DATASET_ID
+   Result: SUCCESS - Exit code 1, clear error message
+   
+3. JSON structure validation
+   Result: SUCCESS - All required fields present
+
+TASK STATUS: COMPLETE

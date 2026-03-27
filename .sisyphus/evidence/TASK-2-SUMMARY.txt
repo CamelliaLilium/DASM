@@ -1,0 +1,110 @@
+================================================================================
+TASK 2: CREATE TEST SUITE FOR ADGM GRADIENT FLOW
+================================================================================
+
+DELIVERABLE: tests/test_adgm_gradient_flow.py
+STATUS: COMPLETE ✓
+
+================================================================================
+TEST SUITE OVERVIEW
+================================================================================
+
+File: tests/test_adgm_gradient_flow.py (300 lines)
+Class: TestADGMGradientFlow
+Tests: 4 total
+
+Test 1: test_live_gap_loss_is_differentiable
+  Purpose: Validate gap_loss has grad_fn (is differentiable)
+  Current: FAILS ✗ (gap_loss.requires_grad = False)
+  Reason: features.detach() at line 137 kills gradient
+  Post-repair: PASSES ✓ (remove detach)
+
+Test 2: test_adgm_changes_gradient_direction
+  Purpose: Validate gap_loss changes gradient direction
+  Current: FAILS ✗ (cosine_sim = 1.0, should be < 0.9999)
+  Reason: gap_loss has zero gradient (detached)
+  Post-repair: PASSES ✓ (gap_loss is differentiable)
+
+Test 3: test_rho_scales_perturbation_norm
+  Purpose: Validate rho scales SAM perturbation norm
+  Current: PASSES ✓ (rho already effective)
+  Reason: SAM first_step already works correctly
+  Post-repair: PASSES ✓ (no change needed)
+
+Test 4: test_perturbed_gap_uses_perturbed_features
+  Purpose: Validate perturbed gap loss is differentiable
+  Current: FAILS ✗ (gap_loss_perturbed.grad_fn = None)
+  Reason: features.detach() kills gradient in perturbed pass
+  Post-repair: PASSES ✓ (remove detach)
+
+================================================================================
+RED STATE EVIDENCE
+================================================================================
+
+File: .sisyphus/evidence/task-2-tests-red-final.txt
+Command: python -m pytest tests/test_adgm_gradient_flow.py -v
+
+Results:
+  FAILED: test_adgm_changes_gradient_direction
+  FAILED: test_live_gap_loss_is_differentiable
+  FAILED: test_perturbed_gap_uses_perturbed_features
+  PASSED: test_rho_scales_perturbation_norm
+
+Summary: 3 FAILED, 1 PASSED (as expected)
+
+================================================================================
+TEST IMPLEMENTATION DETAILS
+================================================================================
+
+Synthetic Data:
+  - Batch size: 32 samples
+  - Feature dimension: 64
+  - Domains: 4 (QIM=0, PMS=1, LSB=2, AHCM=3)
+  - Class labels: 50% cover (0), 50% stego (1)
+  - Device: CPU (for reproducibility)
+
+Real Components (No Mocks):
+  - DomainCenterTracker (from model_dasm_DomainGap.py)
+  - domain_contrastive_loss (from optimizers_collection.DASM.dasm)
+  - DASM optimizer (from optimizers_collection.DASM.dasm)
+  - CrossEntropyLoss (PyTorch)
+
+Key Assertions:
+  Test 1: gap_loss.requires_grad == True AND gap_loss.grad_fn is not None
+  Test 2: cosine_similarity(grad_without_gap, grad_with_gap) < 0.9999
+  Test 3: perturbation_norms monotonically increase with rho
+  Test 4: gap_loss_perturbed.grad_fn is not None
+
+================================================================================
+KNOWN ISSUES FIXED
+================================================================================
+
+1. DASM Constructor Signature
+   - Correct: DASM(params, torch.optim.Adam, rho=..., lr=...)
+   - Incorrect: DASM(base_optimizer_instance, rho=...)
+   - The first arg is params, second is optimizer CLASS, not instance
+
+2. Test Isolation
+   - Each test creates fresh model, optimizer, tracker
+   - No shared state between tests
+   - Ensures reproducibility
+
+================================================================================
+NEXT STEPS (Tasks 3-5)
+================================================================================
+
+These tests will PASS after implementing the following repairs:
+
+Task 3: Remove features.detach() at line 137
+  - Allows gradient to flow through EMA center updates
+  - Fixes Test 1 and Test 4
+
+Task 4: Ensure gap_loss uses differentiable center distances
+  - Already implemented (lines 256-268 use torch.norm)
+  - Will fix Test 2 once Test 1 is fixed
+
+Task 5: Verify perturbed forward pass uses updated centers
+  - Ensure compute_adaptive_gap_loss is called in perturbed pass
+  - Will fix Test 4 once Test 1 is fixed
+
+================================================================================

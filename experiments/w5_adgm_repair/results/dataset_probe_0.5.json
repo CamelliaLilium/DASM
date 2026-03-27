@@ -1,0 +1,55 @@
+{
+  "tuple_length": 6,
+  "train_count": 4000,
+  "test_count": 16000,
+  "per_domain_class_counts": {
+    "QIM": {
+      "total": 1000,
+      "cover_class_0": 1000,
+      "cover_class_1": 0,
+      "stego_class_0": 500,
+      "stego_class_1": 500
+    },
+    "PMS": {
+      "total": 1000,
+      "cover_class_0": 0,
+      "cover_class_1": 1000,
+      "stego_class_0": 500,
+      "stego_class_1": 500
+    },
+    "LSB": {
+      "total": 1000,
+      "cover_class_0": 0,
+      "cover_class_1": 0,
+      "stego_class_0": 500,
+      "stego_class_1": 500
+    },
+    "AHCM": {
+      "total": 1000,
+      "cover_class_0": 0,
+      "cover_class_1": 0,
+      "stego_class_0": 500,
+      "stego_class_1": 500
+    }
+  },
+  "batch_coverage_estimates": {
+    "batch_256": {
+      "smallest_domain": "QIM",
+      "smallest_domain_count": 1000,
+      "expected_samples_per_batch": 64.0,
+      "coverage_ratio": 0.064
+    },
+    "batch_512": {
+      "smallest_domain": "QIM",
+      "smallest_domain_count": 1000,
+      "expected_samples_per_batch": 128.0,
+      "coverage_ratio": 0.128
+    },
+    "batch_1024": {
+      "smallest_domain": "QIM",
+      "smallest_domain_count": 1000,
+      "expected_samples_per_batch": 256.0,
+      "coverage_ratio": 0.256
+    }
+  }
+}
