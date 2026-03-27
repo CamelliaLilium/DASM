@@ -4,6 +4,7 @@
 - `PAPER_MAPPING.md` — mapping from paper sections / tables / figures to repository scripts and outputs.
 - `EXTERNAL_DEPS.md` — datasets, checkpoints, runtime assets, and environment notes required for reproduction.
 - `W5_THEORY_RESPONSE.md` — OpenReview-compatible W5 theoretical response draft for rebuttal use.
+- `W5_ADGM_REPAIR_RESULTS.md` — ADGM gradient-path repair validation results: mechanism checks, compact training runs, rebuttal-safe claim boundaries.
 
 ## Repository intent
 
