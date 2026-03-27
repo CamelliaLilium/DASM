@@ -37,20 +37,22 @@ Source: `experiments/w5_adgm_repair/results/mechanism_validation.json`
 
 ---
 
-## Compact Training Results (dataset_small, 10 epochs, CPU)
+## Compact Training Results (dataset_small, CPU)
 
 Source: `experiments/w5_adgm_repair/results/combined_summary.json`
 
-| Run | Mode | ER | val_acc (last) | gap_retention (last) | adgm_skip_count |
-|-----|------|----|---------------|----------------------|-----------------|
-| DASM | IID | 0.1 | 0.500 | 1.013 | 0 |
-| DASM | IID | 0.5 | 0.542 | 1.025 | 0 |
-| DASM | Holdout (PMS) | 0.5 | 0.589 (seen) / **0.455 (PMS unseen)** | 0.989 | 0 |
+| Run | Mode | ER | Epochs in JSON | val_acc (last) | gap_retention (last) | adgm_skip_count |
+|-----|------|----|---------------|---------------|----------------------|-----------------|
+| DASM | IID | 0.1 | 1 | 0.500 | 1.013 | 0 |
+| DASM | IID | 0.5 | 1 | 0.542 | 1.025 | 0 |
+| DASM | Holdout (PMS) | 0.5 | 10 | 0.589 (seen) / **0.455 (PMS unseen)** | 0.989 | 0 |
+
+**Note on IID epoch count**: The IID runs were executed through the runner script which encountered a CUDA incompatibility (RTX 5070 sm_120 vs PyTorch max sm_90) on the first attempt. The training script saves only the final epoch's values in a single-entry list; the IID JSON files reflect 1 epoch of data. The holdout run was executed directly on CPU for 10 epochs and has complete per-epoch data.
 
 Key observations:
 - `adgm_skip_count=0` across all runs: the batch-coverage guards never triggered with balanced 256-sample batches
 - `gap_retention≈1.0`: live perturbed gap ≈ live clean gap at rho=0.03 (small perturbation radius)
-- Domain gaps grew monotonically across epochs, confirming ADGM is actively expanding cover-stego separation
+- Domain gaps grew monotonically across holdout epochs, confirming ADGM is actively expanding cover-stego separation
 
 ---
 

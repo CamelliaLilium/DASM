@@ -21,22 +21,23 @@ Source: `results/mechanism_validation.json`
 
 ---
 
-## Training Results (dataset_small, 10 epochs, CPU)
+## Training Results (dataset_small, CPU)
 
 Source: `results/combined_summary.json`
 
-| Run | Mode | ER | val_acc (last) | gap_retention (last) | adgm_skip_count (last) |
-|-----|------|----|---------------|----------------------|------------------------|
-| DASM | IID | 0.1 | 0.500 | 1.013 | 0 |
-| DASM | IID | 0.5 | 0.542 | 1.025 | 0 |
-| DASM | Holdout (PMS) | 0.5 | 0.589 (seen) / 0.455 (PMS unseen) | 0.989 | 0 |
+| Run | Mode | ER | Epochs in JSON | val_acc (last) | gap_retention (last) | adgm_skip_count |
+|-----|------|----|---------------|---------------|----------------------|-----------------|
+| DASM | IID | 0.1 | 1 | 0.500 | 1.013 | 0 |
+| DASM | IID | 0.5 | 1 | 0.542 | 1.025 | 0 |
+| DASM | Holdout (PMS) | 0.5 | 10 | 0.589 (seen) / 0.455 (PMS unseen) | 0.989 | 0 |
 
 **Notes:**
 - `adgm_skip_count=0`: batch composition guards never triggered (balanced data, batch_size=256)
 - `gap_retention≈1.0`: live perturbed gap ≈ live clean gap at rho=0.03 (small perturbation)
-- Domain gaps grew monotonically across epochs (ADGM actively expanding separation)
+- IID runs: 1 epoch in JSON (CUDA incompatibility on first attempt; training script saves final epoch only)
+- Holdout run: 10 epochs, run directly on CPU, complete per-epoch data
 - GPU incompatible (RTX 5070 sm_120 vs PyTorch max sm_90) → forced CPU training
-- 10 epochs only — not converged; accuracy near chance level is expected on small data
+- Accuracy near chance level is expected on small data with limited epochs
 
 ---
 
