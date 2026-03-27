@@ -75,9 +75,9 @@ def run_lsegt_domain_generalization(args) -> None:
     else:
         prefix = ''
 
-    # Adam 实验：保持 csam_train 前缀，但后缀仅包含算法名和 batch_size
+    # Adam：目录名与优化器一致（adam_train_...），后缀含算法名与 batch_size
     if optimizer_type == 'adam':
-        run_tag = f'csam_train_{train_names}_to_{test_names}_{args.steg_algorithm}_bs{args.batch_size}'
+        run_tag = f'adam_train_{train_names}_to_{test_names}_{args.steg_algorithm}_bs{args.batch_size}'
     else:
         run_tag = f'{prefix}train_{train_names}_to_{test_names}'
 

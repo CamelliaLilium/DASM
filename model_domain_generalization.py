@@ -36,6 +36,10 @@ def _optimizer_is_sasm(optimizer):
 
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+# dataset/ 与 DASM/ 同级：.../autodl-tmp/dataset/model_train
+_DATASET_SIBLING = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset')
+_DEFAULT_MODEL_TRAIN = os.path.join(_DATASET_SIBLING, 'model_train')
+_DEFAULT_MODEL_TEST = os.path.join(_DATASET_SIBLING, 'model_test')
 
 DOMAIN_MAP = {
     'QIM': 0,
@@ -44,7 +48,7 @@ DOMAIN_MAP = {
     'AHCM': 3
 }
 
-DEFAULT_TRAIN_DATA_ROOT = os.environ.get('DASM_DATA_ROOT', os.path.join(PROJECT_ROOT, 'dataset', 'model_train'))
+DEFAULT_TRAIN_DATA_ROOT = os.environ.get('DASM_DATA_ROOT', _DEFAULT_MODEL_TRAIN)
 
 def set_gpu(gpu_id):
     """Set the GPU to use."""
@@ -98,10 +102,10 @@ def parse_args():
                         default=os.environ.get('DASM_RESULT_ROOT', os.path.join(PROJECT_ROOT, 'results_domain_gen', 'models_base')),
                         help='Results save path')
     parser.add_argument('--data_root', type=str, 
-                        default=os.environ.get('DASM_COMBINED_DATA_ROOT', os.path.join(PROJECT_ROOT, 'dataset', 'model_train')),
+                        default=os.environ.get('DASM_COMBINED_DATA_ROOT', _DEFAULT_MODEL_TRAIN),
                         help='Data root directory')
     parser.add_argument('--test_data_root', type=str, 
-                        default=os.environ.get('DASM_TEST_DATA_ROOT', os.path.join(PROJECT_ROOT, 'dataset', 'model_test')),
+                        default=os.environ.get('DASM_TEST_DATA_ROOT', _DEFAULT_MODEL_TEST),
                         help='Test data root directory')
     parser.add_argument('--train_label_csv', type=str, 
                         default=None, 
@@ -709,13 +713,13 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
         'domain_test_acc': [],  # List of per-epoch dicts: [{'QIM': 0.8, 'PMS': 0.7, ...}, ...]
     }
 
-    print(f"Training on domains: {args.train_domains}, Testing on: {args.test_domains}")
+    print(f"Training on domains: {args.train_domains}, Testing on: {args.test_domains}", flush=True)
     
     # Calculate effective batch size
     effective_batch_size = args.batch_size * args.gradient_accumulation_steps
     if args.gradient_accumulation_steps > 1:
-        print(f"Using gradient accumulation: {args.gradient_accumulation_steps} steps")
-        print(f"Effective batch size: {effective_batch_size} (actual: {args.batch_size})")
+        print(f"Using gradient accumulation: {args.gradient_accumulation_steps} steps", flush=True)
+        print(f"Effective batch size: {effective_batch_size} (actual: {args.batch_size})", flush=True)
 
     for epoch in range(args.epochs):
         model.train()
@@ -726,7 +730,13 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
         # Initialize gradients at the start of each epoch
         optimizer.zero_grad()
         
-        for batch_idx, batch_data in enumerate(train_loader):
+        batch_iter = tqdm(
+            train_loader,
+            desc=f'Epoch {epoch + 1}/{args.epochs}',
+            leave=False,
+            dynamic_ncols=True,
+        )
+        for batch_idx, batch_data in enumerate(batch_iter):
             # Handle different batch formats (with/without algorithm labels)
             if len(batch_data) == 3:
                 inputs, labels, algorithm_labels = batch_data
@@ -846,7 +856,7 @@ def train_model(model, train_loader, test_loader, optimizer, criterion, schedule
 
         epoch_loss = running_loss / len(train_loader.dataset)
         epoch_acc = correct / total
-        print(f"Epoch {epoch + 1}/{args.epochs}, Loss: {epoch_loss:.4f}, Acc: {epoch_acc:.4f}")
+        print(f"Epoch {epoch + 1}/{args.epochs}, Loss: {epoch_loss:.4f}, Acc: {epoch_acc:.4f}", flush=True)
         gen_logs['epoch_loss'].append(float(epoch_loss))
         gen_logs['epoch_acc'].append(float(epoch_acc))
         

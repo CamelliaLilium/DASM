@@ -1,0 +1,44 @@
+loaded best_checkpoint (epoch 0, best_acc 0.8303)
+loaded best_checkpoint (epoch 1, best_acc 0.8515)
+loaded best_checkpoint (epoch 2, best_acc 0.8621)
+loaded best_checkpoint (epoch 3, best_acc 0.8631)
+loaded best_checkpoint (epoch 4, best_acc 0.8716)
+loaded best_checkpoint (epoch 5, best_acc 0.8722)
+loaded best_checkpoint (epoch 7, best_acc 0.8736)
+loaded best_checkpoint (epoch 9, best_acc 0.8806)
+QIM_0.5 test acc 0.9148
+PMS_0.5 test acc 0.7669
+LSB_0.5 test acc 0.9607
+AHCM_0.5 test acc 0.5147
+loaded best_checkpoint (epoch 10, best_acc 0.8814)
+loaded best_checkpoint (epoch 11, best_acc 0.8829)
+loaded best_checkpoint (epoch 12, best_acc 0.8879)
+loaded best_checkpoint (epoch 14, best_acc 0.8886)
+loaded best_checkpoint (epoch 15, best_acc 0.8913)
+loaded best_checkpoint (epoch 19, best_acc 0.8944)
+QIM_0.5 test acc 0.9180
+PMS_0.5 test acc 0.8094
+LSB_0.5 test acc 0.9535
+AHCM_0.5 test acc 0.5142
+loaded best_checkpoint (epoch 23, best_acc 0.8949)
+loaded best_checkpoint (epoch 24, best_acc 0.8955)
+loaded best_checkpoint (epoch 25, best_acc 0.8971)
+QIM_0.5 test acc 0.9323
+PMS_0.5 test acc 0.8042
+LSB_0.5 test acc 0.9484
+AHCM_0.5 test acc 0.5150
+loaded best_checkpoint (epoch 31, best_acc 0.8978)
+loaded best_checkpoint (epoch 32, best_acc 0.8988)
+loaded best_checkpoint (epoch 33, best_acc 0.9007)
+loaded best_checkpoint (epoch 37, best_acc 0.9008)
+loaded best_checkpoint (epoch 38, best_acc 0.9015)
+QIM_0.5 test acc 0.9377
+PMS_0.5 test acc 0.8079
+LSB_0.5 test acc 0.9614
+AHCM_0.5 test acc 0.5216
+loaded best_checkpoint (epoch 44, best_acc 0.9016)
+loaded best_checkpoint (epoch 47, best_acc 0.9016)
+QIM_0.5 test acc 0.9330
+PMS_0.5 test acc 0.8133
+LSB_0.5 test acc 0.9602
+AHCM_0.5 test acc 0.5206

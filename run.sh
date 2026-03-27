@@ -8,7 +8,7 @@ python model_multi.py --train_dataset combined --dataset_id QIM+PMS+LSB+AHCM_0.5
 
 # 提取最佳 epoch_acc 和 domain_test_acc
 python -m extract_best_metrics --json ${DASM_ROOT}/models_collection/Transformer/csam_train_AHCM_LSB_PMS_QIM_to_AHCM_LSB_PMS_QIM/train_logs_QIM+PMS+LSB+AHCM_0.5_1s.json
-python ${DASM_ROOT}/utils/extract_best_metrics.py --json ${DASM_ROOT}/models_collection/dasm_domain_gap/Transformer/dasm_er0.5_bs1024_rho0.03_ctau0.1_gap_seed42/train_logs_QIM+PMS+LSB+AHCM_0.5_1s.json
+python /root/autodl-tmp/DASM/utils/extract_best_metrics.py --json /root/autodl-tmp/DASM/models_collection/dasm_domain_gap/Transformer/adam_trainLSB,AHCM,QIM,PMS_testLSB,AHCM,QIM,PMS_er0.4_bs256_rho0.03_ctau0.5_seed42/train_logs_QIM+PMS+LSB+AHCM_0.4_1s.json
 
 # 计算域差
 python domain_gap_calculator.py --embedding_rates 0.1 0.3 0.5 --gpu 0
@@ -192,11 +192,60 @@ python model_domain_generalization.py \
 
 
 # 多域学习 SAM
-python model_domain_generalization_sam.py \
-    --dataset_id "QIM+PMS+LSB+AHCM_0.1_1s" --embedding_rate 0.1\
-    --steg_algorithm Transformer --train_domains=QIM,PMS,LSB,AHCM --test_domains=QIM,PMS,LSB,AHCM \
-    --use_sam --rho 0.05 --adaptive \
-    --batch_size 280 --epochs 100 --save_model --eval_step 10 --gpu 0
+python /root/autodl-tmp/DASM/model_domain_generalization_sam.py \
+    --dataset_id "QIM+PMS+LSB+AHCM_0.5_1s" --embedding_rate 0.5\
+    --steg_algorithm Transformer --train_domains=AHCM,PMS,LSB --test_domains=QIM \
+    --use_sam --rho 0.03 --adaptive \
+    --batch_size 4096 --epochs 50 --save_model --eval_step 50 --gpu 0 ;\
+python /root/autodl-tmp/DASM/model_domain_generalization_sam.py \
+    --dataset_id "QIM+PMS+LSB+AHCM_0.5_1s" --embedding_rate 0.5\
+    --steg_algorithm Transformer --train_domains=AHCM,QIM,LSB --test_domains=PMS \
+    --use_sam --rho 0.03 --adaptive \
+    --batch_size 4096 --epochs 50 --save_model --eval_step 50 --gpu 0 ;\
+python /root/autodl-tmp/DASM/model_domain_generalization_sam.py \
+    --dataset_id "QIM+PMS+LSB+AHCM_0.5_1s" --embedding_rate 0.5\
+    --steg_algorithm Transformer --train_domains=AHCM,PMS,QIM --test_domains=LSB \
+    --use_sam --rho 0.03 --adaptive \
+    --batch_size 4096 --epochs 50 --save_model --eval_step 50 --gpu 0 ;\
+python /root/autodl-tmp/DASM/model_domain_generalization_sam.py \
+    --dataset_id "QIM+PMS+LSB+AHCM_0.5_1s" --embedding_rate 0.5\
+    --steg_algorithm Transformer --train_domains=QIM,PMS,LSB --test_domains=AHCM \
+    --use_sam --rho 0.03 --adaptive \
+    --batch_size 4096 --epochs 50 --save_model --eval_step 50 --gpu 0
+
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm DVSF \
+--train_domains LSB,AHCM,PMS --test_domains QIM \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model ;\
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm DVSF \
+--train_domains LSB,AHCM,QIM --test_domains PMS \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model ;\
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm DVSF \
+--train_domains PMS,AHCM,QIM --test_domains LSB \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model ;\
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm DVSF \
+--train_domains LSB,PMS,QIM --test_domains AHCM \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model
+
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm LStegT \
+--train_domains LSB,AHCM,PMS --test_domains QIM \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model ;\
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm LStegT \
+--train_domains LSB,AHCM,QIM --test_domains PMS \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model ;\
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm LStegT \
+--train_domains PMS,AHCM,QIM --test_domains LSB \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model ;\
+python model_dasm_DomainGap.py \
+--dataset_id 'QIM+PMS+LSB+AHCM_0.5_1s' --embedding_rate 0.5 --steg_algorithm LStegT \
+--train_domains LSB,PMS,QIM --test_domains AHCM \
+--seed 42 --epochs 50 --batch_size 128 --gpu 0 --save_model
 
 # 使用C-SAM训练模型，必须要有参数contrast_lambda
 # python model_domain_generalization_csam.py \

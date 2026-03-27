@@ -1,0 +1,8 @@
+metric_type,domain,epoch,value
+epoch_acc_best,NA,95,0.90161875
+val_acc_best,NA,48,0.8871625
+domain_test_acc_best,AHCM,75,0.9927
+domain_test_acc_best,LSB,45,0.9376
+domain_test_acc_best,PMS,65,0.7710769230769231
+domain_test_acc_best,QIM,70,0.8789230769230769
+domain_test_acc_best_avg,ALL,NA,0.8950750000000001

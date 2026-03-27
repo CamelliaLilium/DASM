@@ -34,6 +34,7 @@ def build_run_tag(args, optimizer_type: str = None) -> str:
     opt = optimizer_type or get_optimizer_type(args)
     train_names = _format_domains(getattr(args, "train_domains", ""))
     test_names = _format_domains(getattr(args, "test_domains", ""))
-    prefix = "dasm_train" if opt == "adam" else f"{opt}_train"
+    # 与 get_optimizer_type 一致：adam → adam_train，sam → sam_train，dasm → dasm_train（勿把 Adam 写成 dasm_train）
+    prefix = f"{opt}_train"
     return f"{prefix}_{train_names}_to_{test_names}_{args.steg_algorithm}_bs{args.batch_size}"
 

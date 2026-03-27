@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from sam_original import SAM
+from sam import SAM
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
@@ -27,6 +27,31 @@ DOMAIN_MAP = {
     'LSB': 2,
     'AHCM': 3
 }
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+def _default_data_root():
+    """.../dataset/model_train — PKLs or combined_multi/ here."""
+    env = os.environ.get('DASM_DATA_ROOT')
+    if env:
+        mt = os.path.join(env, 'model_train')
+        return mt if os.path.isdir(mt) else env
+    sibling = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset', 'model_train')
+    local = os.path.join(PROJECT_ROOT, 'dataset', 'model_train')
+    return sibling if os.path.isdir(sibling) else local
+
+
+def _default_test_data_root():
+    """.../dataset/model_test — parallel to model_train."""
+    env = os.environ.get('DASM_TEST_DATA_ROOT')
+    if env:
+        mt = os.path.join(env, 'model_test')
+        return mt if os.path.isdir(mt) else env
+    sibling = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset', 'model_test')
+    local = os.path.join(PROJECT_ROOT, 'dataset', 'model_test')
+    return sibling if os.path.isdir(sibling) else local
+
 
 def set_gpu(gpu_id):
     """Set the GPU to use."""
@@ -74,15 +99,18 @@ def parse_args():
                         help='Weight decay')
         
     # Path related arguments
-    parser.add_argument('--data_root', type=str, 
-                        default='/root/autodl-tmp/Voip_retest/data/model_train/er', 
-                        help='Data root directory')
-    parser.add_argument('--test_data_root', type=str, 
-                        default='/root/autodl-tmp/Voip_retest/data/model_test/er', 
+    parser.add_argument('--data_root', type=str,
+                        default=_default_data_root(),
+                        help='Data root (combined_multi/ or flat PKLs under DASM_DATA_ROOT/model_train)')
+    parser.add_argument('--test_data_root', type=str,
+                        default=_default_test_data_root(),
                         help='Test data root directory')
-    parser.add_argument('--result_path', type=str, 
-                        default='/root/autodl-tmp/gpr/models_collection',
-                        help='Results save path, no actual effect as they are redirected to the isolated folder')
+    parser.add_argument('--result_path', type=str,
+                        default=os.environ.get(
+                            'DASM_RESULT_ROOT',
+                            os.path.join(PROJECT_ROOT, 'models_collection'),
+                        ),
+                        help='Results root; outputs go under {result_path}/{steg_algorithm}/…')
     
     # Device related arguments
     parser.add_argument('--gpu', type=int, default=0, help='GPU ID to use')
@@ -177,20 +205,61 @@ def adjust_rho(optimizer, epoch, args):
             param_group['rho'] = rho
 
 def get_data_paths(args):
-    """Get data paths for combined dataset."""
+    """Get data paths for combined dataset (same resolution as model_domain_generalization_optimizers)."""
     if not args.dataset_id:
         raise ValueError("dataset_id must be provided for combined dataset")
-    
+
     sample_len_str = f"_{int(args.sample_length / 1000)}s"
-    pkl_dir = args.data_root
-    # Accept full filename (with .pkl) to avoid inference
-    if args.dataset_id.endswith('.pkl'):
-        pkl_file = os.path.join(pkl_dir, args.dataset_id)
+    pkl_dir = os.path.join(args.data_root, 'combined_multi')
+    if not os.path.exists(pkl_dir):
+        pkl_dir = args.data_root
+
+    if '/' in args.dataset_id:
+        candidates = [args.dataset_id]
+        if not args.dataset_id.endswith(('.pkl', '.pk')):
+            candidates.append(f"{args.dataset_id}.pkl")
+        elif args.dataset_id.endswith('.pk') and not args.dataset_id.endswith('.pkl'):
+            candidates.append(f"{args.dataset_id}l")
+            candidates.append(args.dataset_id[:-3] + ".pkl")
+        for path in candidates:
+            if os.path.exists(path):
+                return path
+        raise FileNotFoundError(f"Combined dataset PKL file not found at: {candidates}")
+
+    dataset_id = args.dataset_id
+    name_candidates = []
+    if dataset_id.endswith('.pkl'):
+        name_candidates.append(dataset_id)
+    elif dataset_id.endswith('.pk'):
+        name_candidates.extend([dataset_id, f"{dataset_id}l", dataset_id[:-3] + ".pkl"])
     else:
-        base_pkl_name = f"{args.dataset_id}{sample_len_str}"
-        pkl_file = os.path.join(pkl_dir, f"{base_pkl_name}.pkl")
-    
-    return pkl_file
+        name_candidates.append(f"{dataset_id}.pkl")
+        if not dataset_id.endswith(sample_len_str):
+            name_candidates.append(f"{dataset_id}{sample_len_str}.pkl")
+
+    dir_candidates = [pkl_dir]
+    if pkl_dir != args.data_root:
+        dir_candidates.append(args.data_root)
+
+    tried = []
+    for base_dir in dir_candidates:
+        for name in name_candidates:
+            path = os.path.join(base_dir, name)
+            tried.append(path)
+            if os.path.exists(path):
+                return path
+
+    base_depth = args.data_root.rstrip(os.sep).count(os.sep)
+    max_depth = base_depth + 4
+    for root, dirs, files in os.walk(args.data_root):
+        if root.count(os.sep) > max_depth:
+            dirs[:] = []
+            continue
+        for name in name_candidates:
+            if name in files:
+                return os.path.join(root, name)
+
+    raise FileNotFoundError(f"Combined dataset PKL file not found. Tried: {tried}")
 
 
 def get_alter_loaders(args):

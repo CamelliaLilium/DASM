@@ -1,0 +1,8 @@
+loaded best_checkpoint (epoch 0, best_acc 0.5102)
+loaded best_checkpoint (epoch 1, best_acc 0.5362)
+loaded best_checkpoint (epoch 10, best_acc 0.5374)
+loaded best_checkpoint (epoch 12, best_acc 0.5389)
+QIM_0.5 test acc 0.5271
+PMS_0.5 test acc 0.8103
+LSB_0.5 test acc 0.8764
+AHCM_0.5 test acc 0.9686

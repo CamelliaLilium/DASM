@@ -21,6 +21,11 @@ import argparse
 from scipy.interpolate import interp1d
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+# Optional third-party SAM variants (gsam / gam); same layout as legacy gpr/ tree
+_GPR_OPTIMIZER_BASELINE = os.path.join(os.path.dirname(PROJECT_ROOT), 'gpr', 'optimizers_baseline')
+
 from optimizers_collection.SAGM import SAGM, LinearScheduler
 
 from optimizers_collection.DGSAM import DGSAM
@@ -28,7 +33,7 @@ from optimizers_collection.DISAM import DISAM as DISAM_Optimizer
 from optimizers_collection.DISAM import compute_variance_penalty, get_domain_loss
 
 # Import GSAM from GSAM-main
-sys.path.insert(0, '/root/autodl-tmp/gpr/optimizers_baseline/GSAM-main')
+sys.path.insert(0, os.path.join(_GPR_OPTIMIZER_BASELINE, 'GSAM-main'))
 try:
     from gsam.gsam import GSAM as GSAM_Optimizer
     from gsam.scheduler import LinearScheduler as GSAM_LinearScheduler
@@ -41,7 +46,7 @@ except Exception:  # noqa: BLE001
 
 
 # Import GAM from GAM-main
-sys.path.insert(0, '/root/autodl-tmp/gpr/optimizers_baseline/GAM-main')
+sys.path.insert(0, os.path.join(_GPR_OPTIMIZER_BASELINE, 'GAM-main'))
 try:
     from gam.gam import GAM
     from gam.util import enable_running_stats as gam_enable_running_stats, disable_running_stats as gam_disable_running_stats
@@ -58,6 +63,37 @@ DOMAIN_MAP = {
     'LSB': 2,
     'AHCM': 3
 }
+DOMAIN_NAME_MAP = {v: k for k, v in DOMAIN_MAP.items()}
+
+
+def _default_data_root():
+    """.../dataset/model_train — PKLs or combined_multi/ here."""
+    env = os.environ.get('DASM_DATA_ROOT')
+    if env:
+        mt = os.path.join(env, 'model_train')
+        return mt if os.path.isdir(mt) else env
+    sibling = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset', 'model_train')
+    local = os.path.join(PROJECT_ROOT, 'dataset', 'model_train')
+    return sibling if os.path.isdir(sibling) else local
+
+
+def _default_test_data_root():
+    """.../dataset/model_test — parallel to model_train."""
+    env = os.environ.get('DASM_TEST_DATA_ROOT')
+    if env:
+        mt = os.path.join(env, 'model_test')
+        return mt if os.path.isdir(mt) else env
+    sibling = os.path.join(os.path.dirname(PROJECT_ROOT), 'dataset', 'model_test')
+    local = os.path.join(PROJECT_ROOT, 'dataset', 'model_test')
+    return sibling if os.path.isdir(sibling) else local
+
+
+def _default_optimizer_result_root():
+    """Root folder for all optimizer runs; each run lives under {root}/{optimizer_name}/…"""
+    return os.environ.get(
+        'DASM_OPTIMIZER_RESULT_ROOT',
+        os.path.join(PROJECT_ROOT, 'optimizers_collection'),
+    )
 
 def set_gpu(gpu_id):
     """Set the GPU to use."""
@@ -105,15 +141,15 @@ def parse_args():
                         help='Weight decay (default 0.01 to match Transformer baseline)')
         
     # Path related arguments
-    parser.add_argument('--data_root', type=str, 
-                        default='/root/autodl-tmp/Voip_retest/data/model_train/er', 
-                        help='Data root directory')
-    parser.add_argument('--test_data_root', type=str, 
-                        default='/root/autodl-tmp/Voip_retest/data/model_test/er', 
+    parser.add_argument('--data_root', type=str,
+                        default=_default_data_root(),
+                        help='Data root directory (contains combined_multi/ or dataset PKLs)')
+    parser.add_argument('--test_data_root', type=str,
+                        default=_default_test_data_root(),
                         help='Test data root directory')
-    parser.add_argument('--result_path', type=str, 
-                        default='/root/autodl-tmp/gpr/models_collection',
-                        help='Results save path, no actual effect as they are redirected to the isolated folder')
+    parser.add_argument('--result_path', type=str,
+                        default=_default_optimizer_result_root(),
+                        help='Results root; outputs go to {result_path}/{optimizer_name}/<run_tag>/')
     
     # Device related arguments
     parser.add_argument('--gpu', type=int, default=0, help='GPU ID to use')
@@ -264,7 +300,6 @@ def get_data_paths(args):
         if not dataset_id.endswith(sample_len_str):
             name_candidates.append(f"{dataset_id}{sample_len_str}.pkl")
 
-    # Try in pkl_dir then fallback to args.data_root
     dir_candidates = [pkl_dir]
     if pkl_dir != args.data_root:
         dir_candidates.append(args.data_root)
@@ -1205,37 +1240,19 @@ def main():
     # Parse arguments
     args = parse_args()
 
-    # --- Dynamic Path Modification ---
-    # For ERM/DGSAM/DISAM/FSAM/SAGM, save to Transformer folder to align with CSAM structure
-    if args.optimizer_name in ['ERM', 'DGSAM', 'DISAM', 'FSAM', 'SAGM']:
-        base_result_path = '/root/autodl-tmp/gpr/models_collection/Transformer'
-    else:
-        # Keep legacy behavior for other optimizer families
-        base_result_path = '/root/autodl-tmp/gpr/optimizers_collection'
-    
-    # Generate run_tag similar to FS-MDP: train_XXX_to_YYY
-    # Use the same logic as FS-MDP runner to ensure consistent naming
+    # Resolve output directory: {result_path}/{optimizer_name}/{run_tag}/
     from models_collection.common.domains import parse_domain_names_to_ids
     train_ids = parse_domain_names_to_ids(args.train_domains)
     test_ids = parse_domain_names_to_ids(args.test_domains)
-    
-    inv_domain_map = {v: k for k, v in DOMAIN_MAP.items()}
-    train_names = '_'.join(sorted(inv_domain_map[i] for i in train_ids))
-    test_names = '_'.join(sorted(inv_domain_map[i] for i in test_ids))
-    if args.optimizer_name in ['ERM', 'DGSAM', 'DISAM', 'FSAM', 'SAGM']:
-        run_tag = f'{args.optimizer_name.lower()}_train_{train_names}_to_{test_names}'
-    else:
-        run_tag = f'train_{train_names}_to_{test_names}'
-    
-    if args.optimizer_name in ['ERM', 'DGSAM', 'DISAM', 'FSAM', 'SAGM']:
-        args.result_path = os.path.join(base_result_path, run_tag)
-    else:
-        args.result_path = os.path.join(base_result_path, args.optimizer_name, run_tag)
+    train_names = '_'.join(sorted(DOMAIN_NAME_MAP[i] for i in train_ids))
+    test_names = '_'.join(sorted(DOMAIN_NAME_MAP[i] for i in test_ids))
+    run_tag = f'{args.optimizer_name.lower()}_train_{train_names}_to_{test_names}'
+    base_result_path = os.path.abspath(args.result_path)
+    args.result_path = os.path.join(base_result_path, args.optimizer_name, run_tag)
     os.makedirs(args.result_path, exist_ok=True)
     print(f"INFO: Using Transformer model with {args.optimizer_name} optimizer")
     print(f"INFO: Run tag: {run_tag}")
     print(f"INFO: Final result path set to: {args.result_path}")
-    # --- End of Dynamic Path Modification ---
 
     # Set GPU
     set_gpu(args.gpu)

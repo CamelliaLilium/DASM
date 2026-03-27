@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-from ..qim_transformer import HessianCompatibleTransformerLayer
+from ..Transformer.transformer import HessianCompatibleTransformerLayer
 
 
 class PositionalEncoding(nn.Module):

@@ -1,0 +1,83 @@
+loaded best_checkpoint (epoch 0, best_acc 0.7501)
+loaded best_checkpoint (epoch 1, best_acc 0.7841)
+loaded best_checkpoint (epoch 2, best_acc 0.8253)
+loaded best_checkpoint (epoch 3, best_acc 0.8396)
+loaded best_checkpoint (epoch 4, best_acc 0.8480)
+loaded best_checkpoint (epoch 5, best_acc 0.8533)
+loaded best_checkpoint (epoch 6, best_acc 0.8560)
+loaded best_checkpoint (epoch 7, best_acc 0.8637)
+loaded best_checkpoint (epoch 9, best_acc 0.8644)
+QIM_0.4 test acc 0.8566
+PMS_0.4 test acc 0.7135
+LSB_0.4 test acc 0.9089
+AHCM_0.4 test acc 0.9702
+loaded best_checkpoint (epoch 11, best_acc 0.8660)
+loaded best_checkpoint (epoch 12, best_acc 0.8731)
+loaded best_checkpoint (epoch 13, best_acc 0.8755)
+loaded best_checkpoint (epoch 15, best_acc 0.8766)
+loaded best_checkpoint (epoch 0, best_acc 0.7501)
+loaded best_checkpoint (epoch 1, best_acc 0.7808)
+loaded best_checkpoint (epoch 2, best_acc 0.8254)
+loaded best_checkpoint (epoch 3, best_acc 0.8396)
+loaded best_checkpoint (epoch 4, best_acc 0.8471)
+loaded best_checkpoint (epoch 5, best_acc 0.8499)
+loaded best_checkpoint (epoch 6, best_acc 0.8550)
+loaded best_checkpoint (epoch 7, best_acc 0.8631)
+loaded best_checkpoint (epoch 9, best_acc 0.8652)
+QIM_0.4 test acc 0.8580
+PMS_0.4 test acc 0.7178
+LSB_0.4 test acc 0.9006
+AHCM_0.4 test acc 0.9689
+loaded best_checkpoint (epoch 10, best_acc 0.8672)
+loaded best_checkpoint (epoch 11, best_acc 0.8684)
+loaded best_checkpoint (epoch 12, best_acc 0.8742)
+loaded best_checkpoint (epoch 15, best_acc 0.8757)
+loaded best_checkpoint (epoch 17, best_acc 0.8785)
+QIM_0.4 test acc 0.8782
+PMS_0.4 test acc 0.7203
+LSB_0.4 test acc 0.9148
+AHCM_0.4 test acc 0.9780
+loaded best_checkpoint (epoch 21, best_acc 0.8810)
+loaded best_checkpoint (epoch 26, best_acc 0.8812)
+loaded best_checkpoint (epoch 27, best_acc 0.8825)
+loaded best_checkpoint (epoch 29, best_acc 0.8844)
+QIM_0.4 test acc 0.8695
+PMS_0.4 test acc 0.7552
+LSB_0.4 test acc 0.9187
+AHCM_0.4 test acc 0.9814
+loaded best_checkpoint (epoch 30, best_acc 0.8854)
+loaded best_checkpoint (epoch 35, best_acc 0.8872)
+QIM_0.4 test acc 0.8520
+PMS_0.4 test acc 0.7709
+LSB_0.4 test acc 0.8908
+AHCM_0.4 test acc 0.9898
+QIM_0.4 test acc 0.8651
+PMS_0.4 test acc 0.7692
+LSB_0.4 test acc 0.9172
+AHCM_0.4 test acc 0.9923
+loaded best_checkpoint (epoch 52, best_acc 0.8887)
+loaded best_checkpoint (epoch 57, best_acc 0.8891)
+QIM_0.4 test acc 0.8689
+PMS_0.4 test acc 0.7731
+LSB_0.4 test acc 0.9106
+AHCM_0.4 test acc 0.9936
+loaded best_checkpoint (epoch 63, best_acc 0.8894)
+loaded best_checkpoint (epoch 68, best_acc 0.8899)
+QIM_0.4 test acc 0.8617
+PMS_0.4 test acc 0.7780
+LSB_0.4 test acc 0.9117
+AHCM_0.4 test acc 0.9960
+loaded best_checkpoint (epoch 79, best_acc 0.8902)
+QIM_0.4 test acc 0.8778
+PMS_0.4 test acc 0.7666
+LSB_0.4 test acc 0.9291
+AHCM_0.4 test acc 0.9938
+loaded best_checkpoint (epoch 82, best_acc 0.8908)
+QIM_0.4 test acc 0.8682
+PMS_0.4 test acc 0.7758
+LSB_0.4 test acc 0.9150
+AHCM_0.4 test acc 0.9961
+QIM_0.4 test acc 0.8685
+PMS_0.4 test acc 0.7760
+LSB_0.4 test acc 0.9147
+AHCM_0.4 test acc 0.9961

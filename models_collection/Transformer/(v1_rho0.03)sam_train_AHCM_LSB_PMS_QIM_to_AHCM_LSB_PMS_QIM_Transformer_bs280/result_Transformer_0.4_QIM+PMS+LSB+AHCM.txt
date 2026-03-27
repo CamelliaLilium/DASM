@@ -1,0 +1,63 @@
+loaded best_checkpoint (epoch 0, best_acc 0.7447)
+loaded best_checkpoint (epoch 0, best_acc 0.7447)
+loaded best_checkpoint (epoch 1, best_acc 0.8004)
+loaded best_checkpoint (epoch 2, best_acc 0.8191)
+loaded best_checkpoint (epoch 3, best_acc 0.8341)
+loaded best_checkpoint (epoch 4, best_acc 0.8362)
+loaded best_checkpoint (epoch 5, best_acc 0.8470)
+loaded best_checkpoint (epoch 6, best_acc 0.8538)
+loaded best_checkpoint (epoch 9, best_acc 0.8639)
+QIM_0.4 test acc 0.8612
+PMS_0.4 test acc 0.7194
+LSB_0.4 test acc 0.8993
+AHCM_0.4 test acc 0.9558
+loaded best_checkpoint (epoch 10, best_acc 0.8649)
+loaded best_checkpoint (epoch 12, best_acc 0.8711)
+loaded best_checkpoint (epoch 13, best_acc 0.8736)
+loaded best_checkpoint (epoch 16, best_acc 0.8758)
+loaded best_checkpoint (epoch 18, best_acc 0.8770)
+QIM_0.4 test acc 0.8568
+PMS_0.4 test acc 0.7518
+LSB_0.4 test acc 0.9113
+AHCM_0.4 test acc 0.9721
+loaded best_checkpoint (epoch 22, best_acc 0.8778)
+loaded best_checkpoint (epoch 26, best_acc 0.8780)
+loaded best_checkpoint (epoch 29, best_acc 0.8791)
+QIM_0.4 test acc 0.8562
+PMS_0.4 test acc 0.7612
+LSB_0.4 test acc 0.9109
+AHCM_0.4 test acc 0.9738
+loaded best_checkpoint (epoch 30, best_acc 0.8800)
+loaded best_checkpoint (epoch 33, best_acc 0.8833)
+loaded best_checkpoint (epoch 35, best_acc 0.8837)
+loaded best_checkpoint (epoch 37, best_acc 0.8845)
+QIM_0.4 test acc 0.8677
+PMS_0.4 test acc 0.7583
+LSB_0.4 test acc 0.9144
+AHCM_0.4 test acc 0.9752
+loaded best_checkpoint (epoch 44, best_acc 0.8868)
+loaded best_checkpoint (epoch 47, best_acc 0.8872)
+QIM_0.4 test acc 0.8638
+PMS_0.4 test acc 0.7586
+LSB_0.4 test acc 0.9156
+AHCM_0.4 test acc 0.9904
+QIM_0.4 test acc 0.8634
+PMS_0.4 test acc 0.7635
+LSB_0.4 test acc 0.9097
+AHCM_0.4 test acc 0.9892
+QIM_0.4 test acc 0.8789
+PMS_0.4 test acc 0.7543
+LSB_0.4 test acc 0.9194
+AHCM_0.4 test acc 0.9887
+QIM_0.4 test acc 0.8674
+PMS_0.4 test acc 0.7706
+LSB_0.4 test acc 0.9166
+AHCM_0.4 test acc 0.9902
+QIM_0.4 test acc 0.8660
+PMS_0.4 test acc 0.7695
+LSB_0.4 test acc 0.9122
+AHCM_0.4 test acc 0.9928
+QIM_0.4 test acc 0.8691
+PMS_0.4 test acc 0.7691
+LSB_0.4 test acc 0.9071
+AHCM_0.4 test acc 0.9922

@@ -384,7 +384,7 @@ def parse_args():
 
 
     # ==================== DASM Optimizer Parameters ====================
-    parser.add_argument('--rho', type=float, default=0.05,
+    parser.add_argument('--rho', type=float, default=0.03,
                         help='Perturbation radius for DASM')
     # contrast_lambda removed: contrast loss is self-normalized by batch statistics
     # =========================================================
