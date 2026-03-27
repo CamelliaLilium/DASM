@@ -67,11 +67,12 @@ class TestADGMGradientFlow(unittest.TestCase):
             device=self.device
         )
         
-        gap_loss, _, _ = tracker.compute_adaptive_gap_loss(
+        gap_loss, _, skip_reason = tracker.compute_live_gap_loss(
             features, domain_labels, class_labels
         )
         
         # Assertions
+        self.assertIsNone(skip_reason, f"compute_live_gap_loss skipped: {skip_reason}")
         self.assertTrue(gap_loss.requires_grad, 
                        "gap_loss must require gradients")
         self.assertIsNotNone(gap_loss.grad_fn,
@@ -124,40 +125,28 @@ class TestADGMGradientFlow(unittest.TestCase):
             momentum=0.9,
             device=self.device
         )
-        gap_loss, _, _ = tracker.compute_adaptive_gap_loss(
+        gap_loss, _, skip_reason2 = tracker.compute_live_gap_loss(
             features, domain_labels, class_labels
         )
+        self.assertIsNone(skip_reason2, f"compute_live_gap_loss skipped: {skip_reason2}")
         
-        # Gradient 1: without gap_loss
+        # Gradient 1: w.r.t. features without gap_loss
         loss_without_gap = cls_loss + contrast_loss
-        model.zero_grad()
-        loss_without_gap.backward(retain_graph=True)
+        (grad_without_gap,) = torch.autograd.grad(
+            loss_without_gap, features, retain_graph=True
+        )
         
-        # Collect gradients
-        grad_without_gap = []
-        for p in model.parameters():
-            if p.grad is not None:
-                grad_without_gap.append(p.grad.clone().flatten())
-        grad_without_gap = torch.cat(grad_without_gap)
-        
-        # Gradient 2: with gap_loss
-        model.zero_grad()
+        # Gradient 2: w.r.t. features with gap_loss
         loss_with_gap = cls_loss + contrast_loss + gap_loss
-        loss_with_gap.backward()
-        
-        grad_with_gap = []
-        for p in model.parameters():
-            if p.grad is not None:
-                grad_with_gap.append(p.grad.clone().flatten())
-        grad_with_gap = torch.cat(grad_with_gap)
+        (grad_with_gap,) = torch.autograd.grad(loss_with_gap, features)
         
         # Compute cosine similarity
         cosine_sim = F.cosine_similarity(
-            grad_without_gap.unsqueeze(0),
-            grad_with_gap.unsqueeze(0)
+            grad_without_gap.flatten().unsqueeze(0),
+            grad_with_gap.flatten().unsqueeze(0)
         ).item()
         
-        # Assert: gap_loss changes gradient direction
+        # Assert: gap_loss changes gradient direction w.r.t. features
         self.assertLess(cosine_sim, 0.9999,
                        f"gap_loss must change gradient direction. "
                        f"Cosine similarity: {cosine_sim:.6f} (should be < 0.9999)")
@@ -267,7 +256,7 @@ class TestADGMGradientFlow(unittest.TestCase):
         cls_loss_clean = criterion(logits_clean, targets)
         
         # Compute gap_loss on clean features
-        gap_loss_clean, _, _ = tracker.compute_adaptive_gap_loss(
+        gap_loss_clean, _, _ = tracker.compute_live_gap_loss(
             features_input_clean, domain_labels, class_labels
         )
         
@@ -285,12 +274,13 @@ class TestADGMGradientFlow(unittest.TestCase):
         logits_perturbed = model(features_input_perturbed)
         cls_loss_perturbed = criterion(logits_perturbed, targets)
         
-        # Compute gap_loss on perturbed features
-        gap_loss_perturbed, _, _ = tracker.compute_adaptive_gap_loss(
+        # Compute gap_loss on perturbed features — must use compute_live_gap_loss
+        gap_loss_perturbed, _, skip_pert = tracker.compute_live_gap_loss(
             features_input_perturbed, domain_labels, class_labels
         )
         
         # Assert: gap_loss_perturbed must be differentiable
+        self.assertIsNone(skip_pert, f"compute_live_gap_loss skipped on perturbed: {skip_pert}")
         self.assertIsNotNone(gap_loss_perturbed.grad_fn,
                             "gap_loss_perturbed must have grad_fn (be differentiable) "
                             "so it can contribute to the perturbed loss backward pass")

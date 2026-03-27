@@ -284,6 +284,77 @@ class DomainCenterTracker:
             weights_info[domain_name] = weight
         
         return weighted_gap_loss, gap_info, weights_info
+
+    def compute_live_gap_loss(self, features, domain_labels, class_labels, ema_gaps=None):
+        """
+        Differentiable ADGM loss computed from live batch features.
+
+        Dual-path design:
+        - EMA tracker (self.update + self.centers): detached, for monitoring + weight estimation only
+        - Live batch centroids: computed here from non-detached features, used for differentiable loss
+
+        Args:
+            features: (N, d_model) Current batch features — MUST NOT be detached
+            domain_labels: (N,) Domain labels (QIM=0, PMS=1, LSB=2, AHCM=3)
+            class_labels: (N,) Binary class labels (Cover=0, Stego=1)
+            ema_gaps: Optional dict {domain_id: gap_value} from EMA tracker for adaptive weights.
+                      If None, uses live gaps as weights (detached).
+
+        Returns:
+            loss: differentiable scalar (requires_grad=True on valid batch) or 0.0 tensor with skip
+            live_gap_info: dict with per-domain live gap values
+            skip_reason: None if computed normally, str if skipped
+        """
+        cover_mask = (class_labels == 0)
+        stego_mask = (class_labels == 1)
+        if cover_mask.sum() == 0:
+            return torch.tensor(0.0, device=features.device), {}, "no_cover_in_batch"
+
+        stego_domains_in_batch = torch.unique(domain_labels[stego_mask])
+        if len(stego_domains_in_batch) < 2:
+            return torch.tensor(0.0, device=features.device), {}, "fewer_than_2_stego_domains"
+
+        mu_cover = features[cover_mask].mean(dim=0)
+
+        live_gaps = {}
+        diff_dists = []
+        domain_ids_live = []
+
+        for domain_id in stego_domains_in_batch.tolist():
+            domain_stego_mask = stego_mask & (domain_labels == domain_id)
+            if domain_stego_mask.sum() == 0:
+                continue
+            mu_k = features[domain_stego_mask].mean(dim=0)
+            d_k = torch.norm(mu_cover - mu_k, p=2)
+            diff_dists.append(d_k)
+            domain_ids_live.append(int(domain_id))
+            live_gaps[int(domain_id)] = d_k.item()
+
+        if len(diff_dists) < 2:
+            return torch.tensor(0.0, device=features.device), live_gaps, "fewer_than_2_valid_stego_domains"
+
+        diff_dists = torch.stack(diff_dists)
+        d_max = diff_dists.max()
+
+        if d_max.item() < 1e-6:
+            return torch.tensor(0.0, device=features.device), live_gaps, "d_max_near_zero"
+
+        if ema_gaps is not None:
+            gap_vals = torch.tensor(
+                [ema_gaps.get(did, live_gaps.get(did, 1.0)) for did in domain_ids_live],
+                device=features.device
+            )
+        else:
+            gap_vals = diff_dists.detach()
+
+        gap_tau = gap_vals.std(unbiased=False) + 1e-6
+        adaptive_weights = F.softmax(-gap_vals / gap_tau, dim=0)
+
+        weighted_gap = torch.sum(adaptive_weights * diff_dists)
+        loss = 1.0 - weighted_gap / (d_max + 1e-6)
+
+        live_gap_info = {did: val for did, val in live_gaps.items()}
+        return loss, live_gap_info, None
     
     def compute_gap_loss(self, features, domain_labels, class_labels, 
                           target_gaps=None, gap_weights=None):
@@ -753,8 +824,17 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
                 if domain_center_tracker is not None:
                     # Get class labels (Cover=0, Stego=1)
                     class_labels = label_indices  # In binary classification, label_indices = class labels
-                    gap_loss, batch_gap_info, batch_weights_info = domain_center_tracker.compute_adaptive_gap_loss(
+                    _, batch_gap_info, batch_weights_info = domain_center_tracker.compute_adaptive_gap_loss(
                         features, algorithm_labels, class_labels
+                    )
+                    ema_gaps_for_weights = {}
+                    current_gaps = domain_center_tracker.get_domain_gaps()
+                    for (src, tgt), dist in current_gaps.items():
+                        if src == -1:
+                            ema_gaps_for_weights[tgt] = dist
+                    gap_loss, _, _ = domain_center_tracker.compute_live_gap_loss(
+                        features, algorithm_labels, class_labels,
+                        ema_gaps=ema_gaps_for_weights if ema_gaps_for_weights else None
                     )
                     running_gap_loss += gap_loss.item() * inputs.size(0)
                 
@@ -783,35 +863,17 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
                 else:
                     contrast_loss_perturbed = torch.tensor(0.0, device=device)
                 
-                # Gap loss after perturbation (relative gap, use same centers)
                 gap_loss_perturbed = torch.tensor(0.0, device=device)
                 if domain_center_tracker is not None:
-                    # Compute relative gap loss on perturbed features
-                    # Get current Cover-Stego gaps using stored centers
-                    current_gaps = domain_center_tracker.get_domain_gaps()
-                    
-                    cover_stego_gaps = {}
-                    for (src, tgt), dist in current_gaps.items():
+                    ema_gaps_for_weights_pert = {}
+                    current_gaps_pert = domain_center_tracker.get_domain_gaps()
+                    for (src, tgt), dist in current_gaps_pert.items():
                         if src == -1:
-                            cover_stego_gaps[tgt] = dist
-                    
-                    if cover_stego_gaps:
-                        domain_ids = sorted(cover_stego_gaps.keys())
-                        # Compute differentiable distances
-                        diff_dists = []
-                        for domain_id in domain_ids:
-                            diff_dist = torch.norm(domain_center_tracker.cover_center - domain_center_tracker.centers[domain_id], p=2)
-                            diff_dists.append(diff_dist)
-                        diff_dists = torch.stack(diff_dists)
-                        
-                        # Use the same adaptive weighting logic for the perturbed loss
-                        gap_values = torch.tensor([cover_stego_gaps[k] for k in domain_ids], device=device)
-                        gap_tau = gap_values.std(unbiased=False) + 1e-6
-                        adaptive_weights = F.softmax(-gap_values / gap_tau, dim=0)
-                        
-                        d_max_diff = diff_dists.max()
-                        weighted_gap = torch.sum(adaptive_weights * diff_dists)
-                        gap_loss_perturbed = 1.0 - weighted_gap / (d_max_diff + 1e-6)
+                            ema_gaps_for_weights_pert[tgt] = dist
+                    gap_loss_perturbed, _, _ = domain_center_tracker.compute_live_gap_loss(
+                        features_perturbed, algorithm_labels, class_labels,
+                        ema_gaps=ema_gaps_for_weights_pert if ema_gaps_for_weights_pert else None
+                    )
                 
                 total_loss_perturbed = (cls_loss_perturbed + contrast_loss_perturbed
                                         + gap_loss_perturbed)
