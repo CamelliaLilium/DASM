@@ -733,6 +733,11 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
         'gap_loss': [],           # Domain gap loss
         'domain_gaps': [],        # Domain gap monitoring
         'adaptive_weights': [],   # Adaptive weights
+        'live_clean_gaps': [],    # Live clean gap values per epoch (dict {domain_id: float})
+        'live_pert_gaps': [],     # Live perturbed gap values per epoch (dict {domain_id: float})
+        'ema_gaps': [],           # EMA gap values per epoch (dict {domain_id: float})
+        'adgm_skip_count': [],    # Skip count per epoch (int)
+        'gap_retention': [],      # Gap retention metric per epoch (float)
     }
     
     # ========== Initialize Adaptive Domain Gap Learning ==========
@@ -775,6 +780,12 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
         # Domain gap info and adaptive weights accumulator
         epoch_gap_info = {}
         epoch_weights_info = defaultdict(list)  # Collect weights per batch
+        
+        # Live gap tracking for new logging metrics
+        epoch_live_clean_gaps = {}    # {domain_id: [list of per-batch values]}
+        epoch_live_pert_gaps = {}     # {domain_id: [list of per-batch values]}
+        epoch_ema_gaps_list = []      # List of EMA gap values per batch
+        epoch_adgm_skip_count = 0     # Count of skipped ADGM computations
         
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{args.epochs}", leave=False)
         for batch_idx, batch_data in enumerate(pbar):
@@ -832,10 +843,24 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
                     for (src, tgt), dist in current_gaps.items():
                         if src == -1:
                             ema_gaps_for_weights[tgt] = dist
-                    gap_loss, _, _ = domain_center_tracker.compute_live_gap_loss(
+                    gap_loss, live_clean_info, skip_reason_clean = domain_center_tracker.compute_live_gap_loss(
                         features, algorithm_labels, class_labels,
                         ema_gaps=ema_gaps_for_weights if ema_gaps_for_weights else None
                     )
+                    # Capture live clean gaps and skip count
+                    if skip_reason_clean is not None:
+                        epoch_adgm_skip_count += 1
+                    else:
+                        if live_clean_info:
+                            for did, val in live_clean_info.items():
+                                epoch_live_clean_gaps.setdefault(did, []).append(val)
+                    # Capture EMA gaps from batch_gap_info
+                    if batch_gap_info:
+                        for k, v in batch_gap_info.items():
+                            if isinstance(v, dict) and 'current' in v:
+                                epoch_ema_gaps_list.append(float(v['current']))
+                            elif isinstance(v, (int, float)):
+                                epoch_ema_gaps_list.append(float(v))
                     running_gap_loss += gap_loss.item() * inputs.size(0)
                 
                 # Total loss = classification loss + contrastive loss + gap loss
@@ -870,10 +895,14 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
                     for (src, tgt), dist in current_gaps_pert.items():
                         if src == -1:
                             ema_gaps_for_weights_pert[tgt] = dist
-                    gap_loss_perturbed, _, _ = domain_center_tracker.compute_live_gap_loss(
+                    gap_loss_perturbed, live_pert_info, skip_reason_pert = domain_center_tracker.compute_live_gap_loss(
                         features_perturbed, algorithm_labels, class_labels,
                         ema_gaps=ema_gaps_for_weights_pert if ema_gaps_for_weights_pert else None
                     )
+                    # Capture live perturbed gaps
+                    if skip_reason_pert is None and live_pert_info:
+                        for did, val in live_pert_info.items():
+                            epoch_live_pert_gaps.setdefault(did, []).append(val)
                 
                 total_loss_perturbed = (cls_loss_perturbed + contrast_loss_perturbed
                                         + gap_loss_perturbed)
@@ -1021,6 +1050,18 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
                 weights_str += f" <- {max_weight_domain} (auto-focused)"
             print(weights_str)
         
+        # Aggregate live gap statistics for new logging metrics
+        avg_live_clean = {did: float(np.mean(vals)) for did, vals in epoch_live_clean_gaps.items()}
+        avg_live_pert = {did: float(np.mean(vals)) for did, vals in epoch_live_pert_gaps.items()}
+        avg_ema = float(np.mean(epoch_ema_gaps_list)) if epoch_ema_gaps_list else 0.0
+        
+        # Gap retention: mean over domains of (live_pert / live_clean)
+        retention_vals = []
+        for did in avg_live_clean:
+            if did in avg_live_pert and avg_live_clean[did] > 1e-6:
+                retention_vals.append(avg_live_pert[did] / avg_live_clean[did])
+        gap_retention = float(np.mean(retention_vals)) if retention_vals else 0.0
+        
         gen_logs['epoch_loss'].append(float(epoch_loss))
         gen_logs['contrast_loss'].append(float(epoch_contrast_loss))
         gen_logs['sharpness'].append(float(epoch_sharpness))
@@ -1029,6 +1070,11 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, scheduler
         gen_logs['gap_loss'].append(float(epoch_gap_loss))
         gen_logs['domain_gaps'].append(epoch_gap_avg)
         gen_logs['adaptive_weights'].append(epoch_weights_avg)
+        gen_logs['live_clean_gaps'].append(avg_live_clean)
+        gen_logs['live_pert_gaps'].append(avg_live_pert)
+        gen_logs['ema_gaps'].append(avg_ema)
+        gen_logs['adgm_skip_count'].append(epoch_adgm_skip_count)
+        gen_logs['gap_retention'].append(gap_retention)
 
         # Validation (seen domains on held-out test split) + optional target-domain monitor
         accuracy = eval_tensor_loader_classification_accuracy(model, val_loader, args, device)
