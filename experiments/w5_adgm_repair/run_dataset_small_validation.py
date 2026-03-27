@@ -263,11 +263,7 @@ def build_command(run_config: Dict[str, Any], args) -> List[str]:
         "--result_path", output_dir,
     ]
     
-    # Determine device
-    if torch.cuda.is_available():
-        cmd.extend(["--device", "cuda"])
-    else:
-        cmd.extend(["--device", "cpu"])
+    cmd.extend(["--device", "cpu"])
     
     # Add method-specific parameters
     if method == "sam":
@@ -400,7 +396,7 @@ def write_summary(results: List[Dict[str, Any]], args):
     print("SUMMARY")
     print("="*80)
     for result in results:
-        status_str = "✓" if result["status"] == "success" else "✗"
+        status_str = "OK" if result["status"] == "success" else "FAIL"
         print(f"{status_str} {result['method']:6s} @ ER={result['er']:.1f} ({result['mode']:7s}): {result['status']}")
 
 
