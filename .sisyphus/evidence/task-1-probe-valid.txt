@@ -1,25 +1,5 @@
 
 ======================================================================
-Probing dataset: QIM+PMS+LSB+AHCM_0.1_1s
-======================================================================
-Tuple format: 6-tuple
-Train samples: 16000
-Test samples: 4000
-
-Per-domain/class counts:
-  QIM: {'total': 4000, 'cover_class_0': 4000, 'cover_class_1': 0, 'stego_class_0': 2000, 'stego_class_1': 2000}
-  PMS: {'total': 4000, 'cover_class_0': 0, 'cover_class_1': 4000, 'stego_class_0': 2000, 'stego_class_1': 2000}
-  LSB: {'total': 4000, 'cover_class_0': 0, 'cover_class_1': 0, 'stego_class_0': 2000, 'stego_class_1': 2000}
-  AHCM: {'total': 4000, 'cover_class_0': 0, 'cover_class_1': 0, 'stego_class_0': 2000, 'stego_class_1': 2000}
-
-Batch coverage estimates:
-  batch_256: {'smallest_domain': 'QIM', 'smallest_domain_count': 4000, 'expected_samples_per_batch': np.float64(64.0), 'coverage_ratio': np.float64(0.016)}
-  batch_512: {'smallest_domain': 'QIM', 'smallest_domain_count': 4000, 'expected_samples_per_batch': np.float64(128.0), 'coverage_ratio': np.float64(0.032)}
-  batch_1024: {'smallest_domain': 'QIM', 'smallest_domain_count': 4000, 'expected_samples_per_batch': np.float64(256.0), 'coverage_ratio': np.float64(0.064)}
-
-Saved JSON to: E:\ICML2026\DASM\experiments\w5_adgm_repair\results\dataset_probe_0.1.json
-
-======================================================================
 Probing dataset: QIM+PMS+LSB+AHCM_0.5_1s
 ======================================================================
 Tuple format: 6-tuple
@@ -38,10 +18,3 @@ Batch coverage estimates:
   batch_1024: {'smallest_domain': 'QIM', 'smallest_domain_count': 1000, 'expected_samples_per_batch': np.float64(256.0), 'coverage_ratio': np.float64(0.256)}
 
 Saved JSON to: E:\ICML2026\DASM\experiments\w5_adgm_repair\results\dataset_probe_0.5.json
-
-
-Transcript saved to: E:\ICML2026\DASM\experiments\w5_adgm_repair\..\..\.sisyphus\evidence\task-1-probe-valid.txt
-
-======================================================================
-Probe completed successfully!
-======================================================================

@@ -1,0 +1,90 @@
+INFO: Result path: experiments/w5_adgm_repair/results\iid\dasm_er0.1_seed42\Transformer
+============================================================
+DASM + Online Domain Gap Modulation
+============================================================
+Arguments:
+  dataset_id: QIM+PMS+LSB+AHCM_0.1_1s
+  embedding_rate: 0.1
+  batch_size: 256
+  gradient_accumulation_steps: 1
+  num_class: 2
+  hidden_num: 64
+  num_layers: 2
+  dropout: 0.5
+  d_model: 64
+  num_heads: 8
+  d_ff: 256
+  max_len: 100
+  epochs: 20
+  lr: 0.001
+  data_root: dataset_small
+  test_data_root: E:\ICML2026\DASM\dataset\model_test
+  result_path: experiments/w5_adgm_repair/results\iid\dasm_er0.1_seed42\Transformer
+  gpu: 0
+  device: cpu
+  seed: 42
+  save_model: False
+  steg_algorithm: Transformer
+  use_dasm: True
+  rho: 0.03
+  use_contrast: True
+  contrast_tau: 0.1
+  eval_step: 10
+  domain_test_interval: 5
+  train_domains: QIM,PMS,LSB,AHCM
+  test_domains: QIM,PMS,LSB,AHCM
+  use_sasm: False
+Using device: cpu
+Results will be saved to: experiments/w5_adgm_repair/results\iid\dasm_er0.1_seed42\Transformer\dasm_trainQIM,PMS,LSB,AHCM_testQIM,PMS,LSB,AHCM_er0.1_bs256_rho0.03_ctau0.1_gap_seed42
+Using Transformer model architecture.
+Loading combined dataset from: dataset_small\QIM+PMS+LSB+AHCM_0.1_1s.pkl
+Train samples (train split ¡É train_domains): 16000
+Val samples (test split ¡É train_domains): 4000
+Target samples (test split ¡É test_domains): 4000
+
+[Adaptive Domain Gap Learning] enabled:
+  Relative gap loss: L = 1 - d_min / d_max (self-normalized, no lambda needed)
+  Adaptive weights: w_k = softmax(-d_k / tau_gap), smaller gap -> larger weight
+  Model will auto-discover hard-to-separate domains and assign higher weights
+
+Training on domains: QIM,PMS,LSB,AHCM, test_domains (target monitor): QIM,PMS,LSB,AHCM
+  Validation & best checkpoint: test split ¡É train_domains
+  Target-domain log (no effect on best ckpt): test split ¡É test_domains
+DASM config: rho=0.03, contrast=on, contrast_tau=0.1 (self-normalized)
+Epoch 1/20:   0%|          | 0/63 [00:00<?, ?it/s]Epoch 1/20:   0%|          | 0/63 [00:00<?, ?it/s, loss=1.05, acc=0.488]Epoch 1/20:   2%|¨‡         | 1/63 [00:00<00:44,  1.39it/s, loss=1.05, acc=0.488]Epoch 1/20:   2%|¨‡         | 1/63 [00:01<00:44,  1.39it/s, loss=1.1, acc=0.496] Epoch 1/20:   3%|¨†         | 2/63 [00:01<00:39,  1.56it/s, loss=1.1, acc=0.496]Epoch 1/20:   3%|¨†         | 2/63 [00:02<00:39,  1.56it/s, loss=1.11, acc=0.49]Epoch 1/20:   5%|¨…         | 3/63 [00:02<00:40,  1.49it/s, loss=1.11, acc=0.49]Epoch 1/20:   5%|¨…         | 3/63 [00:02<00:40,  1.49it/s, loss=1.09, acc=0.484]Epoch 1/20:   6%|¨ƒ         | 4/63 [00:02<00:36,  1.60it/s, loss=1.09, acc=0.484]Epoch 1/20:   6%|¨ƒ         | 4/63 [00:03<00:36,  1.60it/s, loss=1.08, acc=0.48] Epoch 1/20:   8%|¨‚         | 5/63 [00:03<00:35,  1.63it/s, loss=1.08, acc=0.48]Epoch 1/20:   8%|¨‚         | 5/63 [00:03<00:35,  1.63it/s, loss=1.08, acc=0.481]Epoch 1/20:  10%|¨         | 6/63 [00:03<00:33,  1.68it/s, loss=1.08, acc=0.481]Epoch 1/20:  10%|¨         | 6/63 [00:04<00:33,  1.68it/s, loss=1.06, acc=0.483]Epoch 1/20:  11%|¨€         | 7/63 [00:04<00:33,  1.65it/s, loss=1.06, acc=0.483]Epoch 1/20:  11%|¨€         | 7/63 [00:04<00:33,  1.65it/s, loss=1.06, acc=0.485]Epoch 1/20:  13%|¨€¨†        | 8/63 [00:04<00:33,  1.63it/s, loss=1.06, acc=0.485]Epoch 1/20:  13%|¨€¨†        | 8/63 [00:05<00:33,  1.63it/s, loss=1.05, acc=0.482]Epoch 1/20:  14%|¨€¨…        | 9/63 [00:05<00:32,  1.65it/s, loss=1.05, acc=0.482]Epoch 1/20:  14%|¨€¨…        | 9/63 [00:06<00:32,  1.65it/s, loss=1.04, acc=0.484]Epoch 1/20:  16%|¨€¨„        | 10/63 [00:06<00:32,  1.65it/s, loss=1.04, acc=0.484]Epoch 1/20:  16%|¨€¨„        | 10/63 [00:06<00:32,  1.65it/s, loss=1.03, acc=0.485]Epoch 1/20:  17%|¨€¨ƒ        | 11/63 [00:06<00:31,  1.66it/s, loss=1.03, acc=0.485]Epoch 1/20:  17%|¨€¨ƒ        | 11/63 [00:07<00:31,  1.66it/s, loss=1.03, acc=0.492]Epoch 1/20:  19%|¨€¨        | 12/63 [00:07<00:30,  1.67it/s, loss=1.03, acc=0.492]Epoch 1/20:  19%|¨€¨        | 12/63 [00:07<00:30,  1.67it/s, loss=1.02, acc=0.493]Epoch 1/20:  21%|¨€¨€        | 13/63 [00:07<00:29,  1.68it/s, loss=1.02, acc=0.493]Epoch 1/20:  21%|¨€¨€        | 13/63 [00:08<00:29,  1.68it/s, loss=1.02, acc=0.493]Epoch 1/20:  22%|¨€¨€¨‡       | 14/63 [00:08<00:29,  1.68it/s, loss=1.02, acc=0.493]Epoch 1/20:  22%|¨€¨€¨‡       | 14/63 [00:09<00:29,  1.68it/s, loss=1.01, acc=0.495]Epoch 1/20:  24%|¨€¨€¨…       | 15/63 [00:09<00:28,  1.67it/s, loss=1.01, acc=0.495]Epoch 1/20:  24%|¨€¨€¨…       | 15/63 [00:09<00:28,  1.67it/s, loss=1.01, acc=0.494]Epoch 1/20:  25%|¨€¨€¨„       | 16/63 [00:09<00:28,  1.67it/s, loss=1.01, acc=0.494]Epoch 1/20:  25%|¨€¨€¨„       | 16/63 [00:10<00:28,  1.67it/s, loss=1, acc=0.495]   Epoch 1/20:  27%|¨€¨€¨ƒ       | 17/63 [00:10<00:27,  1.70it/s, loss=1, acc=0.495]Epoch 1/20:  27%|¨€¨€¨ƒ       | 17/63 [00:10<00:27,  1.70it/s, loss=0.997, acc=0.496]Epoch 1/20:  29%|¨€¨€¨‚       | 18/63 [00:10<00:26,  1.70it/s, loss=0.997, acc=0.496]Epoch 1/20:  29%|¨€¨€¨‚       | 18/63 [00:11<00:26,  1.70it/s, loss=0.997, acc=0.496]Epoch 1/20:  30%|¨€¨€¨€       | 19/63 [00:11<00:25,  1.69it/s, loss=0.997, acc=0.496]Epoch 1/20:  30%|¨€¨€¨€       | 19/63 [00:12<00:25,  1.69it/s, loss=0.991, acc=0.496]Epoch 1/20:  32%|¨€¨€¨€¨‡      | 20/63 [00:12<00:25,  1.71it/s, loss=0.991, acc=0.496]Epoch 1/20:  32%|¨€¨€¨€¨‡      | 20/63 [00:12<00:25,  1.71it/s, loss=0.988, acc=0.496]Epoch 1/20:  33%|¨€¨€¨€¨†      | 21/63 [00:12<00:24,  1.74it/s, loss=0.988, acc=0.496]Epoch 1/20:  33%|¨€¨€¨€¨†      | 21/63 [00:13<00:24,  1.74it/s, loss=0.985, acc=0.499]Epoch 1/20:  35%|¨€¨€¨€¨…      | 22/63 [00:13<00:23,  1.74it/s, loss=0.985, acc=0.499]Epoch 1/20:  35%|¨€¨€¨€¨…      | 22/63 [00:13<00:23,  1.74it/s, loss=0.985, acc=0.498]Epoch 1/20:  37%|¨€¨€¨€¨ƒ      | 23/63 [00:13<00:23,  1.74it/s, loss=0.985, acc=0.498]Epoch 1/20:  37%|¨€¨€¨€¨ƒ      | 23/63 [00:14<00:23,  1.74it/s, loss=0.986, acc=0.499]Epoch 1/20:  38%|¨€¨€¨€¨‚      | 24/63 [00:14<00:22,  1.74it/s, loss=0.986, acc=0.499]Epoch 1/20:  38%|¨€¨€¨€¨‚      | 24/63 [00:14<00:22,  1.74it/s, loss=0.987, acc=0.498]Epoch 1/20:  40%|¨€¨€¨€¨      | 25/63 [00:14<00:22,  1.68it/s, loss=0.987, acc=0.498]Epoch 1/20:  40%|¨€¨€¨€¨      | 25/63 [00:15<00:22,  1.68it/s, loss=0.983, acc=0.498]Epoch 1/20:  41%|¨€¨€¨€¨€¨‡     | 26/63 [00:15<00:21,  1.69it/s, loss=0.983, acc=0.498]Epoch 1/20:  41%|¨€¨€¨€¨€¨‡     | 26/63 [00:16<00:21,  1.69it/s, loss=0.983, acc=0.499]Epoch 1/20:  43%|¨€¨€¨€¨€¨†     | 27/63 [00:16<00:21,  1.67it/s, loss=0.983, acc=0.499]Epoch 1/20:  43%|¨€¨€¨€¨€¨†     | 27/63 [00:16<00:21,  1.67it/s, loss=0.981, acc=0.499]Epoch 1/20:  44%|¨€¨€¨€¨€¨…     | 28/63 [00:16<00:20,  1.69it/s, loss=0.981, acc=0.499]Epoch 1/20:  44%|¨€¨€¨€¨€¨…     | 28/63 [00:17<00:20,  1.69it/s, loss=0.98, acc=0.498] Epoch 1/20:  46%|¨€¨€¨€¨€¨„     | 29/63 [00:17<00:19,  1.75it/s, loss=0.98, acc=0.498]Epoch 1/20:  46%|¨€¨€¨€¨€¨„     | 29/63 [00:17<00:19,  1.75it/s, loss=0.979, acc=0.498]Epoch 1/20:  48%|¨€¨€¨€¨€¨‚     | 30/63 [00:17<00:19,  1.72it/s, loss=0.979, acc=0.498]Epoch 1/20:  48%|¨€¨€¨€¨€¨‚     | 30/63 [00:18<00:19,  1.72it/s, loss=0.976, acc=0.498]Epoch 1/20:  49%|¨€¨€¨€¨€¨     | 31/63 [00:18<00:18,  1.72it/s, loss=0.976, acc=0.498]Epoch 1/20:  49%|¨€¨€¨€¨€¨     | 31/63 [00:19<00:18,  1.72it/s, loss=0.975, acc=0.499]Epoch 1/20:  51%|¨€¨€¨€¨€¨€     | 32/63 [00:19<00:18,  1.72it/s, loss=0.975, acc=0.499]Epoch 1/20:  51%|¨€¨€¨€¨€¨€     | 32/63 [00:19<00:18,  1.72it/s, loss=0.972, acc=0.499]Epoch 1/20:  52%|¨€¨€¨€¨€¨€¨‡    | 33/63 [00:19<00:17,  1.76it/s, loss=0.972, acc=0.499]Epoch 1/20:  52%|¨€¨€¨€¨€¨€¨‡    | 33/63 [00:20<00:17,  1.76it/s, loss=0.97, acc=0.5]   Epoch 1/20:  54%|¨€¨€¨€¨€¨€¨…    | 34/63 [00:20<00:16,  1.75it/s, loss=0.97, acc=0.5]Epoch 1/20:  54%|¨€¨€¨€¨€¨€¨…    | 34/63 [00:20<00:16,  1.75it/s, loss=0.968, acc=0.499]Epoch 1/20:  56%|¨€¨€¨€¨€¨€¨„    | 35/63 [00:20<00:15,  1.77it/s, loss=0.968, acc=0.499]Epoch 1/20:  56%|¨€¨€¨€¨€¨€¨„    | 35/63 [00:21<00:15,  1.77it/s, loss=0.969, acc=0.498]Epoch 1/20:  57%|¨€¨€¨€¨€¨€¨ƒ    | 36/63 [00:21<00:15,  1.78it/s, loss=0.969, acc=0.498]Epoch 1/20:  57%|¨€¨€¨€¨€¨€¨ƒ    | 36/63 [00:21<00:15,  1.78it/s, loss=0.967, acc=0.499]Epoch 1/20:  59%|¨€¨€¨€¨€¨€¨‚    | 37/63 [00:21<00:14,  1.76it/s, loss=0.967, acc=0.499]Epoch 1/20:  59%|¨€¨€¨€¨€¨€¨‚    | 37/63 [00:22<00:14,  1.76it/s, loss=0.966, acc=0.501]Epoch 1/20:  60%|¨€¨€¨€¨€¨€¨€    | 38/63 [00:22<00:14,  1.76it/s, loss=0.966, acc=0.501]Epoch 1/20:  60%|¨€¨€¨€¨€¨€¨€    | 38/63 [00:23<00:14,  1.76it/s, loss=0.965, acc=0.499]Epoch 1/20:  62%|¨€¨€¨€¨€¨€¨€¨‡   | 39/63 [00:23<00:14,  1.69it/s, loss=0.965, acc=0.499]Epoch 1/20:  62%|¨€¨€¨€¨€¨€¨€¨‡   | 39/63 [00:23<00:14,  1.69it/s, loss=0.963, acc=0.499]Epoch 1/20:  63%|¨€¨€¨€¨€¨€¨€¨†   | 40/63 [00:23<00:13,  1.67it/s, loss=0.963, acc=0.499]Epoch 1/20:  63%|¨€¨€¨€¨€¨€¨€¨†   | 40/63 [00:24<00:13,  1.67it/s, loss=0.961, acc=0.499]Epoch 1/20:  65%|¨€¨€¨€¨€¨€¨€¨„   | 41/63 [00:24<00:13,  1.69it/s, loss=0.961, acc=0.499]Epoch 1/20:  65%|¨€¨€¨€¨€¨€¨€¨„   | 41/63 [00:24<00:13,  1.69it/s, loss=0.959, acc=0.498]Epoch 1/20:  67%|¨€¨€¨€¨€¨€¨€¨ƒ   | 42/63 [00:24<00:12,  1.66it/s, loss=0.959, acc=0.498]Epoch 1/20:  67%|¨€¨€¨€¨€¨€¨€¨ƒ   | 42/63 [00:25<00:12,  1.66it/s, loss=0.958, acc=0.499]Epoch 1/20:  68%|¨€¨€¨€¨€¨€¨€¨‚   | 43/63 [00:25<00:11,  1.69it/s, loss=0.958, acc=0.499]Epoch 1/20:  68%|¨€¨€¨€¨€¨€¨€¨‚   | 43/63 [00:26<00:11,  1.69it/s, loss=0.958, acc=0.497]Epoch 1/20:  70%|¨€¨€¨€¨€¨€¨€¨   | 44/63 [00:26<00:11,  1.69it/s, loss=0.958, acc=0.497]Epoch 1/20:  70%|¨€¨€¨€¨€¨€¨€¨   | 44/63 [00:26<00:11,  1.69it/s, loss=0.957, acc=0.497]Epoch 1/20:  71%|¨€¨€¨€¨€¨€¨€¨€¨‡  | 45/63 [00:26<00:10,  1.70it/s, loss=0.957, acc=0.497]Epoch 1/20:  71%|¨€¨€¨€¨€¨€¨€¨€¨‡  | 45/63 [00:27<00:10,  1.70it/s, loss=0.955, acc=0.496]Epoch 1/20:  73%|¨€¨€¨€¨€¨€¨€¨€¨†  | 46/63 [00:27<00:09,  1.71it/s, loss=0.955, acc=0.496]Epoch 1/20:  73%|¨€¨€¨€¨€¨€¨€¨€¨†  | 46/63 [00:27<00:09,  1.71it/s, loss=0.954, acc=0.497]Epoch 1/20:  75%|¨€¨€¨€¨€¨€¨€¨€¨…  | 47/63 [00:27<00:09,  1.71it/s, loss=0.954, acc=0.497]Epoch 1/20:  75%|¨€¨€¨€¨€¨€¨€¨€¨…  | 47/63 [00:28<00:09,  1.71it/s, loss=0.954, acc=0.497]Epoch 1/20:  76%|¨€¨€¨€¨€¨€¨€¨€¨„  | 48/63 [00:28<00:08,  1.69it/s, loss=0.954, acc=0.497]Epoch 1/20:  76%|¨€¨€¨€¨€¨€¨€¨€¨„  | 48/63 [00:28<00:08,  1.69it/s, loss=0.953, acc=0.497]Epoch 1/20:  78%|¨€¨€¨€¨€¨€¨€¨€¨‚  | 49/63 [00:28<00:08,  1.68it/s, loss=0.953, acc=0.497]Epoch 1/20:  78%|¨€¨€¨€¨€¨€¨€¨€¨‚  | 49/63 [00:29<00:08,  1.68it/s, loss=0.954, acc=0.498]Epoch 1/20:  79%|¨€¨€¨€¨€¨€¨€¨€¨  | 50/63 [00:29<00:07,  1.70it/s, loss=0.954, acc=0.498]Epoch 1/20:  79%|¨€¨€¨€¨€¨€¨€¨€¨  | 50/63 [00:30<00:07,  1.70it/s, loss=0.953, acc=0.498]Epoch 1/20:  81%|¨€¨€¨€¨€¨€¨€¨€¨€  | 51/63 [00:30<00:06,  1.73it/s, loss=0.953, acc=0.498]Epoch 1/20:  81%|¨€¨€¨€¨€¨€¨€¨€¨€  | 51/63 [00:30<00:06,  1.73it/s, loss=0.952, acc=0.498]Epoch 1/20:  83%|¨€¨€¨€¨€¨€¨€¨€¨€¨† | 52/63 [00:30<00:06,  1.71it/s, loss=0.952, acc=0.498]Epoch 1/20:  83%|¨€¨€¨€¨€¨€¨€¨€¨€¨† | 52/63 [00:31<00:06,  1.71it/s, loss=0.951, acc=0.497]Epoch 1/20:  84%|¨€¨€¨€¨€¨€¨€¨€¨€¨… | 53/63 [00:31<00:06,  1.66it/s, loss=0.951, acc=0.497]Epoch 1/20:  84%|¨€¨€¨€¨€¨€¨€¨€¨€¨… | 53/63 [00:32<00:06,  1.66it/s, loss=0.949, acc=0.497]Epoch 1/20:  86%|¨€¨€¨€¨€¨€¨€¨€¨€¨„ | 54/63 [00:32<00:05,  1.57it/s, loss=0.949, acc=0.497]Epoch 1/20:  86%|¨€¨€¨€¨€¨€¨€¨€¨€¨„ | 54/63 [00:32<00:05,  1.57it/s, loss=0.949, acc=0.497]Epoch 1/20:  87%|¨€¨€¨€¨€¨€¨€¨€¨€¨ƒ | 55/63 [00:32<00:05,  1.58it/s, loss=0.949, acc=0.497]Epoch 1/20:  87%|¨€¨€¨€¨€¨€¨€¨€¨€¨ƒ | 55/63 [00:33<00:05,  1.58it/s, loss=0.948, acc=0.496]Epoch 1/20:  89%|¨€¨€¨€¨€¨€¨€¨€¨€¨ | 56/63 [00:33<00:04,  1.62it/s, loss=0.948, acc=0.496]Epoch 1/20:  89%|¨€¨€¨€¨€¨€¨€¨€¨€¨ | 56/63 [00:33<00:04,  1.62it/s, loss=0.947, acc=0.495]Epoch 1/20:  90%|¨€¨€¨€¨€¨€¨€¨€¨€¨€ | 57/63 [00:33<00:03,  1.62it/s, loss=0.947, acc=0.495]Epoch 1/20:  90%|¨€¨€¨€¨€¨€¨€¨€¨€¨€ | 57/63 [00:34<00:03,  1.62it/s, loss=0.946, acc=0.495]Epoch 1/20:  92%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨‡| 58/63 [00:34<00:03,  1.65it/s, loss=0.946, acc=0.495]Epoch 1/20:  92%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨‡| 58/63 [00:35<00:03,  1.65it/s, loss=0.945, acc=0.495]Epoch 1/20:  94%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨†| 59/63 [00:35<00:02,  1.68it/s, loss=0.945, acc=0.495]Epoch 1/20:  94%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨†| 59/63 [00:35<00:02,  1.68it/s, loss=0.944, acc=0.495]Epoch 1/20:  95%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨„| 60/63 [00:35<00:01,  1.70it/s, loss=0.944, acc=0.495]Epoch 1/20:  95%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨„| 60/63 [00:36<00:01,  1.70it/s, loss=0.943, acc=0.495]Epoch 1/20:  97%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨ƒ| 61/63 [00:36<00:01,  1.72it/s, loss=0.943, acc=0.495]Epoch 1/20:  97%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨ƒ| 61/63 [00:36<00:01,  1.72it/s, loss=0.942, acc=0.495]Epoch 1/20:  98%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨‚| 62/63 [00:36<00:00,  1.73it/s, loss=0.942, acc=0.495]Epoch 1/20:  98%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨‚| 62/63 [00:37<00:00,  1.73it/s, loss=0.942, acc=0.494]Epoch 1/20: 100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 63/63 [00:37<00:00,  1.99it/s, loss=0.942, acc=0.494]                                                                                  Epoch 1/20, Loss: 1.8838, Contrast: 1.0000, GapLoss: 0.1739, Sharpness: 0.0137, Acc: 0.4945
+  Domain Sharpness: QIM=0.0012, PMS=0.0049, LSB=-0.0010, AHCM=0.0052
+  Domain Gaps: Cover-QIM=0.079(r=0.49)^, Cover-PMS=0.087(r=0.52)^, Cover-LSB=0.096(r=0.74)^, Cover-AHCM=0.198(r=0.96)OK | d_min=0.07, d_max=0.20
+  Adaptive Weights: AHCM=0.054, LSB=0.159, PMS=0.372, QIM=0.415 <- QIM (auto-focused)
+Validation Accuracy (test¡Étrain_domains): 0.5000
+Target domain Accuracy (test¡Étest_domains): 0.5000
+Traceback (most recent call last):
+  File "E:\ICML2026\DASM\model_dasm_DomainGap.py", line 1720, in <module>
+    main()
+  File "E:\ICML2026\DASM\model_dasm_DomainGap.py", line 1580, in main
+    train_model(model, train_loader, val_loader, optimizer, criterion, scheduler, args, target_loader=target_loader)
+  File "E:\ICML2026\DASM\model_dasm_DomainGap.py", line 1143, in train_model
+    plot_domain_test_acc_curves(gen_logs, args)
+  File "E:\ICML2026\DASM\testing_utils.py", line 494, in plot_domain_test_acc_curves
+    plt.savefig(os.path.join(plot_dir, f'domain_test_acc_curve_{ds_id_clean}.png'), 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\pyplot.py", line 1223, in savefig
+    res = fig.savefig(*args, **kwargs)  # type: ignore[func-returns-value]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\figure.py", line 3388, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backend_bases.py", line 2218, in print_figure
+    result = print_method(
+             ^^^^^^^^^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backend_bases.py", line 2068, in <lambda>
+    print_method = functools.wraps(meth)(lambda *args, **kwargs: meth(
+                                                                 ^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backends\backend_agg.py", line 496, in print_png
+    self._print_pil(filename_or_obj, "png", pil_kwargs, metadata)
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backends\backend_agg.py", line 445, in _print_pil
+    mpl.image.imsave(
+  File "D:\miniconda3\Lib\site-packages\matplotlib\image.py", line 1676, in imsave
+    image.save(fname, **pil_kwargs)
+  File "D:\miniconda3\Lib\site-packages\PIL\Image.py", line 2429, in save
+    fp = builtins.open(filename, "w+b")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'experiments/w5_adgm_repair/results\\iid\\dasm_er0.1_seed42\\Transformer\\dasm_trainQIM,PMS,LSB,AHCM_testQIM,PMS,LSB,AHCM_er0.1_bs256_rho0.03_ctau0.1_gap_seed42\\training_plots_QIM+PMS+LSB+AHCM_0.1_1s\\domain_test_acc_curve_QIM+PMS+LSB+AHCM_0.1_1s.png'

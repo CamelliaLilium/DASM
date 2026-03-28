@@ -1,0 +1,90 @@
+INFO: Result path: experiments/w5_adgm_repair/results\iid\dasm_er0.5_seed42\Transformer
+============================================================
+DASM + Online Domain Gap Modulation
+============================================================
+Arguments:
+  dataset_id: QIM+PMS+LSB+AHCM_0.5_1s
+  embedding_rate: 0.5
+  batch_size: 256
+  gradient_accumulation_steps: 1
+  num_class: 2
+  hidden_num: 64
+  num_layers: 2
+  dropout: 0.5
+  d_model: 64
+  num_heads: 8
+  d_ff: 256
+  max_len: 100
+  epochs: 10
+  lr: 0.001
+  data_root: dataset_small
+  test_data_root: E:\ICML2026\DASM\dataset\model_test
+  result_path: experiments/w5_adgm_repair/results\iid\dasm_er0.5_seed42\Transformer
+  gpu: 0
+  device: cpu
+  seed: 42
+  save_model: False
+  steg_algorithm: Transformer
+  use_dasm: True
+  rho: 0.03
+  use_contrast: True
+  contrast_tau: 0.1
+  eval_step: 10
+  domain_test_interval: 5
+  train_domains: QIM,PMS,LSB,AHCM
+  test_domains: QIM,PMS,LSB,AHCM
+  use_sasm: False
+Using device: cpu
+Results will be saved to: experiments/w5_adgm_repair/results\iid\dasm_er0.5_seed42\Transformer\dasm_trainQIM,PMS,LSB,AHCM_testQIM,PMS,LSB,AHCM_er0.5_bs256_rho0.03_ctau0.1_gap_seed42
+Using Transformer model architecture.
+Loading combined dataset from: dataset_small\QIM+PMS+LSB+AHCM_0.5_1s.pkl
+Train samples (train split ¡É train_domains): 4000
+Val samples (test split ¡É train_domains): 16000
+Target samples (test split ¡É test_domains): 16000
+
+[Adaptive Domain Gap Learning] enabled:
+  Relative gap loss: L = 1 - d_min / d_max (self-normalized, no lambda needed)
+  Adaptive weights: w_k = softmax(-d_k / tau_gap), smaller gap -> larger weight
+  Model will auto-discover hard-to-separate domains and assign higher weights
+
+Training on domains: QIM,PMS,LSB,AHCM, test_domains (target monitor): QIM,PMS,LSB,AHCM
+  Validation & best checkpoint: test split ¡É train_domains
+  Target-domain log (no effect on best ckpt): test split ¡É test_domains
+DASM config: rho=0.03, contrast=on, contrast_tau=0.1 (self-normalized)
+Epoch 1/10:   0%|          | 0/16 [00:00<?, ?it/s]Epoch 1/10:   0%|          | 0/16 [00:00<?, ?it/s, loss=1.12, acc=0.48]Epoch 1/10:   6%|¨ƒ         | 1/16 [00:00<00:08,  1.71it/s, loss=1.12, acc=0.48]Epoch 1/10:   6%|¨ƒ         | 1/16 [00:01<00:08,  1.71it/s, loss=1.09, acc=0.488]Epoch 1/10:  12%|¨€¨†        | 2/16 [00:01<00:08,  1.59it/s, loss=1.09, acc=0.488]Epoch 1/10:  12%|¨€¨†        | 2/16 [00:01<00:08,  1.59it/s, loss=1.06, acc=0.479]Epoch 1/10:  19%|¨€¨        | 3/16 [00:01<00:08,  1.61it/s, loss=1.06, acc=0.479]Epoch 1/10:  19%|¨€¨        | 3/16 [00:02<00:08,  1.61it/s, loss=1.05, acc=0.479]Epoch 1/10:  25%|¨€¨€¨„       | 4/16 [00:02<00:07,  1.65it/s, loss=1.05, acc=0.479]Epoch 1/10:  25%|¨€¨€¨„       | 4/16 [00:03<00:07,  1.65it/s, loss=1.03, acc=0.481]Epoch 1/10:  31%|¨€¨€¨€¨‡      | 5/16 [00:03<00:06,  1.68it/s, loss=1.03, acc=0.481]Epoch 1/10:  31%|¨€¨€¨€¨‡      | 5/16 [00:03<00:06,  1.68it/s, loss=1.02, acc=0.49] Epoch 1/10:  38%|¨€¨€¨€¨‚      | 6/16 [00:03<00:05,  1.69it/s, loss=1.02, acc=0.49]Epoch 1/10:  38%|¨€¨€¨€¨‚      | 6/16 [00:04<00:05,  1.69it/s, loss=0.996, acc=0.501]Epoch 1/10:  44%|¨€¨€¨€¨€¨…     | 7/16 [00:04<00:05,  1.71it/s, loss=0.996, acc=0.501]Epoch 1/10:  44%|¨€¨€¨€¨€¨…     | 7/16 [00:04<00:05,  1.71it/s, loss=0.98, acc=0.499] Epoch 1/10:  50%|¨€¨€¨€¨€¨€     | 8/16 [00:04<00:04,  1.74it/s, loss=0.98, acc=0.499]Epoch 1/10:  50%|¨€¨€¨€¨€¨€     | 8/16 [00:05<00:04,  1.74it/s, loss=0.967, acc=0.5] Epoch 1/10:  56%|¨€¨€¨€¨€¨€¨ƒ    | 9/16 [00:05<00:04,  1.75it/s, loss=0.967, acc=0.5]Epoch 1/10:  56%|¨€¨€¨€¨€¨€¨ƒ    | 9/16 [00:05<00:04,  1.75it/s, loss=0.961, acc=0.498]Epoch 1/10:  62%|¨€¨€¨€¨€¨€¨€¨†   | 10/16 [00:05<00:03,  1.74it/s, loss=0.961, acc=0.498]Epoch 1/10:  62%|¨€¨€¨€¨€¨€¨€¨†   | 10/16 [00:06<00:03,  1.74it/s, loss=0.956, acc=0.5]  Epoch 1/10:  69%|¨€¨€¨€¨€¨€¨€¨   | 11/16 [00:06<00:02,  1.76it/s, loss=0.956, acc=0.5]Epoch 1/10:  69%|¨€¨€¨€¨€¨€¨€¨   | 11/16 [00:06<00:02,  1.76it/s, loss=0.957, acc=0.497]Epoch 1/10:  75%|¨€¨€¨€¨€¨€¨€¨€¨„  | 12/16 [00:06<00:02,  1.76it/s, loss=0.957, acc=0.497]Epoch 1/10:  75%|¨€¨€¨€¨€¨€¨€¨€¨„  | 12/16 [00:07<00:02,  1.76it/s, loss=0.952, acc=0.502]Epoch 1/10:  81%|¨€¨€¨€¨€¨€¨€¨€¨€¨‡ | 13/16 [00:07<00:01,  1.79it/s, loss=0.952, acc=0.502]Epoch 1/10:  81%|¨€¨€¨€¨€¨€¨€¨€¨€¨‡ | 13/16 [00:08<00:01,  1.79it/s, loss=0.947, acc=0.499]Epoch 1/10:  88%|¨€¨€¨€¨€¨€¨€¨€¨€¨‚ | 14/16 [00:08<00:01,  1.81it/s, loss=0.947, acc=0.499]Epoch 1/10:  88%|¨€¨€¨€¨€¨€¨€¨€¨€¨‚ | 14/16 [00:08<00:01,  1.81it/s, loss=0.942, acc=0.499]Epoch 1/10:  94%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨…| 15/16 [00:08<00:00,  1.76it/s, loss=0.942, acc=0.499]Epoch 1/10:  94%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨…| 15/16 [00:09<00:00,  1.76it/s, loss=0.94, acc=0.495] Epoch 1/10: 100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 16/16 [00:09<00:00,  1.96it/s, loss=0.94, acc=0.495]                                                                                 Epoch 1/10, Loss: 1.8801, Contrast: 1.0000, GapLoss: 0.1686, Sharpness: 0.0333, Acc: 0.4948
+  Domain Sharpness: QIM=0.0025, PMS=-0.0007, LSB=0.0102, AHCM=0.0068
+  Domain Gaps: Cover-QIM=0.143(r=0.45)^, Cover-LSB=0.164(r=0.51)^, Cover-PMS=0.324(r=0.86)^, Cover-AHCM=0.371(r=1.00)OK | d_min=0.14, d_max=0.36
+  Adaptive Weights: AHCM=0.046, LSB=0.356, PMS=0.091, QIM=0.516 <- QIM (auto-focused)
+Validation Accuracy (test¡Étrain_domains): 0.5420
+Target domain Accuracy (test¡Étest_domains): 0.5420
+Traceback (most recent call last):
+  File "E:\ICML2026\DASM\model_dasm_DomainGap.py", line 1720, in <module>
+    main()
+  File "E:\ICML2026\DASM\model_dasm_DomainGap.py", line 1580, in main
+    train_model(model, train_loader, val_loader, optimizer, criterion, scheduler, args, target_loader=target_loader)
+  File "E:\ICML2026\DASM\model_dasm_DomainGap.py", line 1143, in train_model
+    plot_domain_test_acc_curves(gen_logs, args)
+  File "E:\ICML2026\DASM\testing_utils.py", line 494, in plot_domain_test_acc_curves
+    plt.savefig(os.path.join(plot_dir, f'domain_test_acc_curve_{ds_id_clean}.png'), 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\pyplot.py", line 1223, in savefig
+    res = fig.savefig(*args, **kwargs)  # type: ignore[func-returns-value]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\figure.py", line 3388, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backend_bases.py", line 2218, in print_figure
+    result = print_method(
+             ^^^^^^^^^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backend_bases.py", line 2068, in <lambda>
+    print_method = functools.wraps(meth)(lambda *args, **kwargs: meth(
+                                                                 ^^^^^
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backends\backend_agg.py", line 496, in print_png
+    self._print_pil(filename_or_obj, "png", pil_kwargs, metadata)
+  File "D:\miniconda3\Lib\site-packages\matplotlib\backends\backend_agg.py", line 445, in _print_pil
+    mpl.image.imsave(
+  File "D:\miniconda3\Lib\site-packages\matplotlib\image.py", line 1676, in imsave
+    image.save(fname, **pil_kwargs)
+  File "D:\miniconda3\Lib\site-packages\PIL\Image.py", line 2429, in save
+    fp = builtins.open(filename, "w+b")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'experiments/w5_adgm_repair/results\\iid\\dasm_er0.5_seed42\\Transformer\\dasm_trainQIM,PMS,LSB,AHCM_testQIM,PMS,LSB,AHCM_er0.5_bs256_rho0.03_ctau0.1_gap_seed42\\training_plots_QIM+PMS+LSB+AHCM_0.5_1s\\domain_test_acc_curve_QIM+PMS+LSB+AHCM_0.5_1s.png'

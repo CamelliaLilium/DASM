@@ -1,0 +1,2 @@
+mode,method,er,seed,output_dir,status
+iid,dasm,0.5,42,experiments/w5_adgm_repair/results\iid\dasm_er0.5_seed42,failed

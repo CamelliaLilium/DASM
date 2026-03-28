@@ -2,12 +2,12 @@
   "adgm_differentiable": true,
   "gradient_direction_changed": true,
   "rho_perturbation_norms": {
-    "0.01": 0.00917339,
+    "0.01": 0.01,
     "0.03": 0.03,
-    "0.05": 0.04999993
+    "0.05": 0.05000001
   },
   "rho_monotonic": true,
   "perturbed_gap_differs": true,
-  "clean_gap_value": 0.598878,
-  "perturbed_gap_value": 0.598878
+  "clean_gap_value": 0.536332,
+  "perturbed_gap_value": 0.536332
 }
